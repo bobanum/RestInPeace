@@ -136,7 +136,7 @@ class ArrestDB {
 			exit(self::reply(self::$HTTP[503]));
 		}
 	}
-	protected static function connectMysql($options = []) {
+	protected static function XXXconnectMysql($options = []) {
 		$options = self::$connectionOptions + $options;
 		$options += [
 			\PDO::ATTR_AUTOCOMMIT => true,
@@ -151,7 +151,7 @@ class ArrestDB {
 		$dsn = sprintf('%s:host=%s;port=%s;dbname=%s', $host, $port, $dbname, $username, $password);
 		return new \PDO($dsn, $username, $password, $options);
 	}
-	protected static function connectSqlite($options = []) {
+	protected static function XXXconnectSqlite($options = []) {
 		$options = self::$connectionOptions + $options;
 		$options += [
 			\PDO::ATTR_TIMEOUT => 3,
