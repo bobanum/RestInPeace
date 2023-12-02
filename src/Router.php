@@ -5,16 +5,19 @@ class Router {
 	public function __construct() {
 		echo "Hello World!";
 	}
-	static function get($path, $callback) {
+	static function get($path, $callback = null) {
 		$method = $_SERVER['REQUEST_METHOD'];
 		if ($method !== 'GET') {
 			return;
 		}
-		$uri = $_SERVER['REQUEST_URI'];
-		$uri = parse_url($uri, PHP_URL_PATH);
-		if ($uri !== $path) {
+		if (!Request::match($path)) {
 			return;
 		}
-		$callback();
+		if (empty($callback)) return true;
+
+		if (is_string($callback)) {
+			$callback = [RestInPeace::class, $callback];
+		}
+		Response::reply(call_user_func_array($callback, Request::$parts));
 	}
 }

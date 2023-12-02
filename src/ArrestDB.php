@@ -11,7 +11,7 @@ class ArrestDB {
 	protected static $db = null;
 	protected static $root = null;
 	protected static $result = [];
-	public static $HTTP = [
+	public static $XXXHTTP = [
 		200 => [
 			'success' => [
 				'code' => 200,
@@ -61,7 +61,7 @@ class ArrestDB {
 			],
 		],
 	];
-	public static $connectionOptions = [
+	public static $XXXconnectionOptions = [
 		\PDO::ATTR_CASE => \PDO::CASE_NATURAL,
 		\PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
 		\PDO::ATTR_EMULATE_PREPARES => false,
@@ -103,7 +103,7 @@ class ArrestDB {
 		return true;
 	}
 
-	protected static function requestMethod() {
+	protected static function XXXrequestMethod() {
 		if (array_key_exists('_method', $_GET)) {
 			return strtoupper(trim($_GET['_method']));
 		}
@@ -253,7 +253,7 @@ class ArrestDB {
 		}
 	}
 
-	public static function reply($data) {
+	public static function XXXreply($data) {
 		$bitmask = 0;
 		$options = ['UNESCAPED_SLASHES', 'UNESCAPED_UNICODE'];
 
