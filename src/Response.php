@@ -64,7 +64,7 @@ class Response {
 		if (is_array($content) && array_key_exists('status', $content) && array_key_exists('code', $content)) {
 			$code = $code ?? $content['code'];
 		}
-		$this->code = $code;
+		$this->code = $code ?? 200;
 
 		$this->contentType = 'application/json';
 		$this->options = self::$json_options;
