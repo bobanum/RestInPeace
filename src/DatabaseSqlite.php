@@ -2,7 +2,7 @@
 
 namespace RestInPeace;
 
-abstract class DatabaseMysql extends Database {
+abstract class DatabaseSqlite extends Database {
 	public $database;
 	public $username;
 	public $password;
@@ -81,5 +81,10 @@ abstract class DatabaseMysql extends Database {
 		}
 		$this->_pdo = $pdo;
 		return $pdo;
+	}
+	static function fromConfig() {
+		return new static(
+			Config::get('DB_DATABASE', 'database/db.sqlite')
+		);
 	}
 }

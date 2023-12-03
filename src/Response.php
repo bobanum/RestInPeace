@@ -107,6 +107,16 @@ class Response {
 
 		$result->send();
 	}
+	public static function sendCode($code, $message = null) {
+		$result = self::$HTTP[$code] ?? [
+			'status' => 'Error',
+			'code' => $code,
+			'message' => 'Unknown',
+		];
+
+		$result = new self($result);
+		$result->send();
+	}
 	public function send() {
 
 		$result = $this->toJson();

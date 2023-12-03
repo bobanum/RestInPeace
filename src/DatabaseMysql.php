@@ -29,4 +29,13 @@ abstract class DatabaseMysql extends Database {
 		$this->_pdo = new \PDO($dsn, $this->username, $this->password, $options);
 		return $this->_pdo;
 	}
+	static function fromConfig() {
+		return new static(
+			Config::get('DB_DATABASE', 'database'),
+			Config::get('DB_USERNAME', 'root'),
+			Config::get('DB_PASSWORD', ''),
+			Config::get('DB_HOST', 'localhost'),
+			Config::get('DB_PORT', 3306)
+		);
+	}
 }
