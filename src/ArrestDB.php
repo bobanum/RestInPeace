@@ -1,7 +1,7 @@
 <?php
 namespace ArrestDB;
 
-function config($key, $default = null) {
+function XXXconfig($key, $default = null) {
 	return $_ENV[$key] ?? $default;
 }
 
@@ -119,7 +119,7 @@ class ArrestDB {
 		return $_SERVER['REQUEST_METHOD'];
 	}
 
-	protected static function connect() {
+	protected static function XXXconnect() {
 		if (self::$db !== null) {
 			return self::$db;
 		}
@@ -287,7 +287,7 @@ class ArrestDB {
 		return $result;
 	}
 
-	public static function serve($on = null, $route = null, $callback = null) {
+	public static function XXXserve($on = null, $route = null, $callback = null) {
 		if (!empty($on) && (strcasecmp(self::requestMethod(), $on) !== 0)) return false;
 
 		$route = preg_replace('~/\(#[a-z]+\)\?~i', '(?:$0)?', $route);
@@ -311,7 +311,7 @@ class ArrestDB {
 		self::serve('POST', '/(#any)', 'ActionPost');
 		self::serve('PUT', '/(#any)/(#num)', 'ActionPut');
 	}
-	protected static function getPathInfo() {
+	protected static function XXXgetPathInfo() {
 		if (isset($_SERVER['PATH_INFO'])) {
 			return $_SERVER['PATH_INFO'];
 		}
@@ -416,7 +416,7 @@ class ArrestDB {
 		}
 		return $result;
 	}
-	protected static function isAllowed($clients) {
+	protected static function XXXisAllowed($clients) {
 		return (
 			(!empty($clients)) ||
 			(!in_array($_SERVER['REMOTE_ADDR'], (array) $clients)) ||

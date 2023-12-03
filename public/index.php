@@ -16,5 +16,7 @@ function vd() {
 	echo "</pre>";
 }
 
+RestInPeace::guard();
+
 include "../routes.php";
 

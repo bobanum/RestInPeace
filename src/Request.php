@@ -7,7 +7,7 @@ class Request {
 	static $uri;
 	static $parts = [];
 	static $placeholders = [
-		'#any' => '[^/]+',
+		'#any' => '[^/\?#]+',
 		'#num' => '[0-9]+',
 		'#alpha' => '[a-z]+',
 		'#ALPHA' => '[A-Z]+',
@@ -15,6 +15,9 @@ class Request {
 		'#alphanum' => '[a-zA-Z0-9]+',
 		'#slug' => '[a-z0-9_.-]+',
 	];
+	static function get($key, $default = null) {
+		return $_GET[$key] ?? $_POST[$key] ?? $_REQUEST[$key] ?? $default;
+	}
 	static function load() {
 		self::$method = self::getMethod();
 		self::$uri = preg_replace('~/+$~', '', $_SERVER['REQUEST_URI']); // remove trailing slash
