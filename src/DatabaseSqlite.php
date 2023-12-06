@@ -2,21 +2,17 @@
 
 namespace RestInPeace;
 
-abstract class DatabaseSqlite extends Database {
+class DatabaseSqlite extends Database {
 	public $database;
 	public $username;
 	public $password;
 	public $host;
 	public $port;
-	public $_pdo;
-
+	static public $excluded_analysis_keys = ['rootpage', 'sql', 'tbl_name', 'type'];
 	public function __construct($database = 'database/db.sqlite') {
 		$this->database = str_replace('\\', '/', $database); // Fix for Windows (backslashes in path
 	}
-	function connect($options = []) {
-		if (!empty($this->_pdo)) {
-			return $this->_pdo;
-		}
+	function newPDO($options = []) {
 		$options = self::$connectionOptions + [
 			\PDO::ATTR_TIMEOUT => 3,
 		] + $options;
@@ -31,6 +27,7 @@ abstract class DatabaseSqlite extends Database {
 		} else {
 			$dbPath = $database;
 		}
+
 		$dbPath = realpath($dbPath);
 		if (empty($dbPath)) {
 			throw new \Exception("Database not found");
@@ -79,12 +76,85 @@ abstract class DatabaseSqlite extends Database {
 		foreach ($pragmas as $key => $value) {
 			$pdo->exec(sprintf('PRAGMA %s=%s;', $key, $value));
 		}
-		$this->_pdo = $pdo;
 		return $pdo;
 	}
 	static function fromConfig() {
 		return new static(
 			Config::get('DB_DATABASE', 'database/db.sqlite')
 		);
+	}
+	public function getTables($type='table') {
+		$query = "SELECT * FROM sqlite_master WHERE type = '$type' ORDER BY name";
+		$result = $this->execute($query);
+		$tables = [];
+
+		$keys = array_flip(self::$excluded_analysis_keys);
+		foreach ($result as $table) {
+			$table = array_diff_key($table, $keys);
+			$table['columns'] = $this->getColumns($table['name']);
+			$table['indexes'] = $this->getIndexes($table['name']);
+			$table['primary_key'] = $this->getPrimaryKey($table['name']);
+			$tables[$table['name']] = $table;
+		}
+		foreach ($tables as &$table) {
+			$table['foreign_keys'] = $this->getForeignKeys($table['name']);
+		}
+		return $tables;
+	}
+	public function getPrimaryKey($table) {
+		$query = "PRAGMA table_info(`$table`)";
+		$result = $this->execute($query);
+		$pk = array_filter($result, function ($column) {
+			return $column['pk'] === 1;
+		});
+		$pk = array_map(function ($column) {
+			return $column['name'];
+		}, $pk);
+		
+		return $pk;
+	}
+	public function getColumns($table) {
+		$query = "PRAGMA table_info(`$table`)";
+		$result = $this->execute($query);
+		$columns = [];
+		$keys = array_flip(self::$excluded_analysis_keys);
+		foreach ($result as $column) {
+			$column = array_diff_key($column, $keys);
+			$columns[$column['name']] = $column;
+		}
+		return $columns;
+	}
+	public function getIndexes($table) {
+		$query = "PRAGMA index_list(`$table`)";
+		$result = $this->execute($query);
+		$indexes = [];
+		$keys = array_flip(self::$excluded_analysis_keys);
+		foreach ($result as $index) {
+			$index = array_diff_key($index, $keys);
+			$indexes[$index['name']] = $index;
+		}
+		return $indexes;
+	}
+	public function getViews() {
+		$query = "SELECT * FROM sqlite_master WHERE type='view' ORDER BY name";
+		$result = $this->execute($query);
+		$views = [];
+		$keys = array_flip(self::$excluded_analysis_keys);
+		foreach ($result as $view) {
+			$view = array_diff_key($view, $keys);
+			$views[$view['name']] = $view;
+		}
+		return $views;
+	}
+	public function getForeignKeys($table) {
+		$query = "PRAGMA foreign_key_list(`$table`)";
+		$result = $this->execute($query);
+		$foreignKeys = [];
+		$keys = array_flip(self::$excluded_analysis_keys);
+		foreach ($result as $foreignKey) {
+			$foreignKey = array_diff_key($foreignKey, $keys);
+			$foreignKeys[$foreignKey['from']] = $foreignKey;
+		}
+		return $foreignKeys;
 	}
 }

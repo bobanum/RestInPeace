@@ -206,7 +206,7 @@ class ArrestDB {
 		}
 		return $db;
 	}
-	public static function querySql($query) {
+	public static function XXXquerySql($query) {
 		if (is_array($query)) {
 			$query = sprintf('%s;', implode(' ', $query));
 		}
@@ -321,7 +321,7 @@ class ArrestDB {
 		return preg_replace('~/++~', '/', substr($_SERVER['PHP_SELF'], strlen($_SERVER['SCRIPT_NAME'])) . '/');
 	}
 
-	public static function getCols($implode = true) {
+	public static function XXXgetCols($implode = true) {
 		if (!isset($_GET['cols'])) {
 			return "*";
 		}
@@ -344,7 +344,7 @@ class ArrestDB {
 		return $result;
 	}
 
-	public static function getParams() {
+	public static function XXXgetParams() {
 		$query = [];
 		if (isset($_GET['by'])) {
 			if (!isset($_GET['order'])) {
@@ -399,7 +399,7 @@ class ArrestDB {
 		return $data;
 	}
 
-	public static function fetch($stmt) {
+	public static function XXXfetch($stmt) {
 		$result = $stmt->fetchAll();
 		if (count($result) === 0) {
 			return $result;

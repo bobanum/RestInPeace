@@ -107,7 +107,7 @@ class Response {
 
 		$result->send();
 	}
-	public static function sendCode($code, $message = null) {
+	public static function replyCode($code, $message = null) {
 		$result = self::$HTTP[$code] ?? [
 			'status' => 'Error',
 			'code' => $code,

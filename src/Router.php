@@ -10,11 +10,10 @@ class Router {
 		$bak_uri = Request::$uri;
 		$parts = [];
 		$prefix = Request::matchStart($path, $parts);
-		if (!$prefix) {
+		if ($prefix === false) {
 			return;
 		}
 		Request::$uri = substr(Request::$uri, strlen($prefix));
-		// Request::$parts += $parts;
 		if (is_string($callback)) {
 			$callback = [RestInPeace::class, $callback];
 		}
@@ -27,7 +26,7 @@ class Router {
 		if ($method !== 'GET') {
 			return;
 		}
-		if (!Request::match($path)) {
+		if (Request::match($path) === false) {
 			return;
 		}
 		if (empty($callback)) return true;
