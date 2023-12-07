@@ -170,13 +170,13 @@ class RestInPeace {
 		return self::$db;
 	}
 	static public function getSchema() {
-		$filepath = self::config_path('schema.json');
-		if (file_exists($filepath) && time() - filemtime('schema.json') < Config::get('SCHEMA_CACHE', self::SCHEMA_CACHE)) {
-			return json_decode(file_get_contents('schema.json'), true);
+		$filepath = self::config_path(basename(Config::get('DB_DATABASE', 'schema')).'.json');
+		if (file_exists($filepath) && time() - filemtime($filepath) < Config::get('SCHEMA_CACHE', self::SCHEMA_CACHE)) {
+			return json_decode(file_get_contents($filepath), true);
 		} else {
 			$schema = self::analyseDb();
 			$schema['updated_at'] = time();
-			file_put_contents('schema.json', json_encode($schema));
+			file_put_contents($filepath, json_encode($schema));
 			return $schema;
 		}
 	}
