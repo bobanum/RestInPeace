@@ -9,26 +9,15 @@ class DatabaseSqlite extends Database {
 	public $host;
 	public $port;
 	static public $excluded_analysis_keys = ['rootpage', 'sql', 'tbl_name', 'type'];
-	public function __construct($database = 'database/db.sqlite') {
-		$this->database = str_replace('\\', '/', $database); // Fix for Windows (backslashes in path
+	public function __construct($database = 'db.sqlite') {
+		$this->database = RestInPeace::database_path($database);
 	}
 	function newPDO($options = []) {
 		$options = self::$connectionOptions + [
 			\PDO::ATTR_TIMEOUT => 3,
 		] + $options;
-		$database = $this->database;
-		$dbPath = dirname($_SERVER['DOCUMENT_ROOT']);
-		if ($database[0] === '/') {
-			$dbPath .= $database;
-		} else if (substr($database, 0, 2) === './') {
-			$dbPath .= substr($database, 1);
-		} else if (substr($database, 0, 3) === '../') {
-			$dbPath .= "/" . $database;
-		} else {
-			$dbPath = $database;
-		}
-
-		$dbPath = realpath($dbPath);
+		$dbPath = $this->database;
+		
 		if (empty($dbPath)) {
 			throw new \Exception("Database not found");
 		}
@@ -79,9 +68,7 @@ class DatabaseSqlite extends Database {
 		return $pdo;
 	}
 	static function fromConfig() {
-		return new static(
-			Config::get('DB_DATABASE', 'database/db.sqlite')
-		);
+		return new static(Config::get('DB_DATABASE', 'db.sqlite'));
 	}
 	public function getTables($type='table') {
 		$query = "SELECT * FROM sqlite_master WHERE type = '$type' ORDER BY name";

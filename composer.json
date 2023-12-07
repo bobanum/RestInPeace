@@ -2,7 +2,7 @@
   "name": "bobanum/restinpeace",
   "description": "RESTful PHP API for SQLite, MySQL and PostgreSQL Databases",
   "require": {
-    "php": ">=8.0.0",
+    "php": ">=7.4.33",
     "doctrine/inflector": "^2.0",
     "vlucas/phpdotenv": "^5.6"
   },

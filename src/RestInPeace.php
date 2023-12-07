@@ -6,9 +6,41 @@ class RestInPeace {
 	const SCHEMA_CACHE = 86400;
 	const CONFIG_PATH = ".";
 	protected static $root = null;
+	protected static $app_root = null;
 	protected static $db = null;
 
 	static public function guard() {
+	}
+	static public function app_path($path = "") {
+		if (self::$app_root === null) {
+			self::$app_root = Config::get('APP_PATH', dirname($_SERVER['DOCUMENT_ROOT']));
+			// Testing for relative path
+			$temp = dirname($_SERVER['DOCUMENT_ROOT']) . "/" . self::$app_root;
+			if (file_exists($temp)) {
+				self::$app_root = $temp;
+			}
+		}
+		if (empty($path)) {
+			return self::$app_root;
+		}
+		return self::$app_root . "/" . $path;
+	}
+	static public function database_path($path = '') {
+		return self::absolutePath(Config::get('DATABASE_PATH', 'database'), $path);
+	}
+	static public function config_path($path = '') {
+		return self::absolutePath(Config::get('CONFIG_PATH', 'config'), $path);
+	}
+	static public function absolutePath($path, $file = "") {
+		$result = self::app_path($path);
+		if (!file_exists($result)) {
+			$result = $path;
+		}
+		$result = str_replace('\\','/',realpath($result) ?: $result);
+		if (!empty($file)) {
+			$result .= "/" . $file;
+		}
+		return $result;
 	}
 	public static function getCols($implode = true) {
 		if (!isset($_GET['cols'])) {
@@ -47,7 +79,7 @@ class RestInPeace {
 		$cols = self::getCols();
 
 		$query = [
-			sprintf('SELECT %s FROM `%s`', $cols, $table."_index"),
+			sprintf('SELECT %s FROM `%s`', $cols, $table . "_index"),
 		];
 		self::connect();
 		self::addParams($query);
@@ -70,7 +102,7 @@ class RestInPeace {
 		return Response::reply($result);
 	}
 	public static function analyseDb() {
-		
+
 		return [
 			"tables" => self::$db->getTables(),
 			"views" => self::$db->getTables('view'),
@@ -104,8 +136,7 @@ class RestInPeace {
 		if (is_string($clients)) {
 			$clients = preg_split('~\s*,\s*~', $clients, -1, PREG_SPLIT_NO_EMPTY);
 		}
-		return (
-			!empty($clients) ||
+		return (!empty($clients) ||
 			!in_array($_SERVER['REMOTE_ADDR'], (array) $clients) ||
 			empty($_SERVER['HTTP_REFERER']) ||	// TODO CHECK IF LOCAL
 			!in_array($_SERVER['HTTP_REFERER'], (array) $clients)
@@ -139,9 +170,8 @@ class RestInPeace {
 		return self::$db;
 	}
 	static public function getSchema() {
-		vd($_SERVER);
-		$filepath = dirname() + Config::get('SCHEMA_CACHE', self::SCHEMA_CACHE) . 'schema.json';
-		if (file_exists(Config::get('SCHEMA_CACHE', self::SCHEMA_CACHE) . 'schema.json') && time() - filemtime('schema.json') < Config::get('SCHEMA_CACHE', self::SCHEMA_CACHE)) {
+		$filepath = self::config_path('schema.json');
+		if (file_exists($filepath) && time() - filemtime('schema.json') < Config::get('SCHEMA_CACHE', self::SCHEMA_CACHE)) {
 			return json_decode(file_get_contents('schema.json'), true);
 		} else {
 			$schema = self::analyseDb();
