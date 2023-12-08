@@ -5,9 +5,11 @@ namespace RestInPeace;
 class RestInPeace {
 	const SCHEMA_CACHE = 86400;
 	const CONFIG_PATH = ".";
-	protected static $root = null;
+	public static $root = null;
 	protected static $app_root = null;
 	protected static $db = null;
+	public static $included_tables = [];
+	public static $excluded_tables = [];
 
 	static public function guard() {
 	}
@@ -76,24 +78,17 @@ class RestInPeace {
 		return $query;
 	}
 	static function actionGetAll($table, $suffix = "index") {
-		$cols = self::getCols();
-
-		$query = [
-			sprintf('SELECT %s FROM `%s`', $cols, $table . "_index"),
-		];
-		self::connect();
-		self::addParams($query);
-		$result = self::$db->execute($query);
-
-		if ($result === false) {
+		$schema = self::getSchema();
+		if (!isset($schema['tables'][$table])) {
 			return Response::replyCode(404);
 		}
-
-		if (empty($result)) {
-			return Response::replyCode(204);
-		}
+		self::connect();
+		$table = Table::fromConfig($schema['tables'][$table], self::$db);
+		$result = $table->all($suffix);
+		////
+		// Adding HATEOAS
 		array_walk($result, function (&$row) use ($table) {
-			$row['url'] = sprintf("%s/%s/%s", self::$root, $table, $row['id']);
+			$row['url'] = sprintf("%s/%s/%s", self::$root, $table->name, $row['id']);
 		});
 		$result = [
 			"count" => count($result),
@@ -102,27 +97,7 @@ class RestInPeace {
 		return Response::reply($result);
 	}
 	public static function analyseDb() {
-
-		return [
-			"tables" => self::$db->getTables(),
-			"views" => self::$db->getTables('view'),
-		];
-	}
-	public static function init() {
-		self::checkClients();
-		if (strcmp(PHP_SAPI, 'cli') === 0) {
-			exit('ArrestDB should not be run from CLI.' . PHP_EOL);
-		}
-
-		$pdo = self::connect();
-
-		if (!$pdo) {
-			Response::replyCode(503);
-		}
-		$host = $_SERVER['HTTP_HOST'];
-		$protocol = $_SERVER['REQUEST_SCHEME'] ?? 'http';
-		self::$root = sprintf('%s://%s', $protocol, $host);
-		// exit(self::$root);
+		return self::$db->analyse();
 	}
 	protected static function checkClients() {
 		$clients = Config::get('CLIENTS', '');
@@ -179,6 +154,40 @@ class RestInPeace {
 			file_put_contents($filepath, json_encode($schema));
 			return $schema;
 		}
+	}
+	static public function isValidTable($table) {
+		if (empty(self::$included_tables) && empty(self::$excluded_tables)) {
+			return true;
+		}
+		if (!empty(self::$included_tables)) {
+			return in_array($table, self::$included_tables);
+		}
+		if (!empty(self::$excluded_tables)) {
+			return !in_array($table, self::$excluded_tables);
+		}
+		return false;
+	}
+	public static function init() {
+		self::checkClients();
+
+		if (file_exists(self::config_path('restinpeace.php'))) {
+			$config = require_once self::config_path('restinpeace.php');
+			foreach ($config as $key => $value) {
+				if (property_exists(self::class, $key)) {
+					self::$$key = $value;
+				}
+			}
+		}
+
+		$pdo = self::connect();
+
+		if (!$pdo) {
+			Response::replyCode(503);
+		}
+		$host = $_SERVER['HTTP_HOST'];
+		$protocol = $_SERVER['REQUEST_SCHEME'] ?? 'http';
+		self::$root = sprintf('%s://%s', $protocol, $host);
+		// exit(self::$root);
 	}
 }
 RestInPeace::init();

@@ -70,23 +70,52 @@ class DatabaseSqlite extends Database {
 	static function fromConfig() {
 		return new static(Config::get('DB_DATABASE', 'db.sqlite'));
 	}
-	public function getTables($type='table') {
-		$query = "SELECT * FROM sqlite_master WHERE type = '$type' ORDER BY name";
+	public function getTables() {
+		$query = "SELECT * FROM sqlite_master WHERE type = 'table' ORDER BY name";
 		$result = $this->execute($query);
 		$tables = [];
 
 		$keys = array_flip(self::$excluded_analysis_keys);
 		foreach ($result as $table) {
+			$name = $table['name'];
+			if (!RestInPeace::isValidTable($name)) {
+				continue;
+			}
 			$table = array_diff_key($table, $keys);
-			$table['columns'] = $this->getColumns($table['name']);
-			$table['indexes'] = $this->getIndexes($table['name']);
-			$table['primary_key'] = $this->getPrimaryKey($table['name']);
-			$tables[$table['name']] = $table;
+			$table['columns'] = $this->getColumns($name);
+			$table['indexes'] = $this->getIndexes($name);
+			$table['primary_key'] = $this->getPrimaryKey($name);
+			$tables[$name] = $table;
 		}
 		foreach ($tables as &$table) {
 			$table['foreign_keys'] = $this->getForeignKeys($table['name']);
 		}
 		return $tables;
+	}
+	public function getViews() {
+		$query = "SELECT * FROM sqlite_master WHERE type = 'view' ORDER BY name";
+		$result = $this->execute($query);
+		$views = [];
+
+		$keys = array_flip(self::$excluded_analysis_keys);
+		foreach ($result as $view) {
+			$name = $view['name'];
+			$view = array_diff_key($view, $keys);
+			$view['columns'] = $this->getColumns($name);
+			$views[$name] = $view;
+		}
+		return $views;
+	}
+	public function zzgetViews() {
+		$query = "SELECT * FROM sqlite_master WHERE type='view' ORDER BY name";
+		$result = $this->execute($query);
+		$views = [];
+		$keys = array_flip(self::$excluded_analysis_keys);
+		foreach ($result as $view) {
+			$view = array_diff_key($view, $keys);
+			$views[$view['name']] = $view;
+		}
+		return $views;
 	}
 	public function getPrimaryKey($table) {
 		$query = "PRAGMA table_info(`$table`)";
@@ -121,17 +150,6 @@ class DatabaseSqlite extends Database {
 			$indexes[$index['name']] = $index;
 		}
 		return $indexes;
-	}
-	public function getViews() {
-		$query = "SELECT * FROM sqlite_master WHERE type='view' ORDER BY name";
-		$result = $this->execute($query);
-		$views = [];
-		$keys = array_flip(self::$excluded_analysis_keys);
-		foreach ($result as $view) {
-			$view = array_diff_key($view, $keys);
-			$views[$view['name']] = $view;
-		}
-		return $views;
 	}
 	public function getForeignKeys($table) {
 		$query = "PRAGMA foreign_key_list(`$table`)";

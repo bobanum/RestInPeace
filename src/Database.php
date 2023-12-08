@@ -1,4 +1,5 @@
 <?php
+
 namespace RestInPeace;
 
 abstract class Database {
@@ -29,7 +30,37 @@ abstract class Database {
 		}
 		return $query;
 	}
+	static public function findSuffixe($viewName, $tableName = '') {
+		if ($tableName) {
+			$tableName = '^' . $tableName;
+		}
+		if (preg_match("~{$tableName}__([a-z]+)$~", $viewName, $matches)) {
+			return $matches[1];
+		}
+		return false;
+	}
+	public function analyse() {
+		$tables = $this->getTables();
+		$views = $this->getViews();
+		foreach ($tables as &$table) {
+			$tableName = $table['name'];
+			$table_views = array_map(fn ($view) => self::findSuffixe($view['name'], $tableName), $views);
+			$table_views = array_filter($table_views);
+			$table['views'] = array_flip($table_views);
+			if (!Config::get('KEEP_ALL_VIEWS', false)) {
+				foreach($table['views'] as $suffixe => $viewName) {
+					$table['views'][$suffixe] = $views[$viewName];
+					unset($views[$viewName]);
+				}
+			}
+		}
+		return [
+			"tables" => $tables,
+			"views" => $views,
+		];
+	}
 	abstract public function getTables();
+	abstract public function getViews();
 	abstract public function getColumns($table);
 	abstract public function getIndexes($table);
 
@@ -42,7 +73,7 @@ abstract class Database {
 	}
 	public function execute($query, ...$data) {
 		$query = $this->normalizeQuery($query);
-		
+
 		try {
 			$statement = $this->prepare($query);
 			if (count($data, COUNT_RECURSIVE) > count($data)) {

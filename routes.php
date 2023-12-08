@@ -8,10 +8,11 @@ Router::get('/', function () {
 	$schema = RIP::getSchema();
 	return $schema;
 });
-Router::group('/#slug', function () {
+Router::group('/#slug', function ($table) {
 	Router::get('/', function ($table) {
 		return RIP::actionGetAll($table);
 	});
+	
 	// Router::get('/#num', function ($table, $id) {
 	// 	return [$table, $id];
 	// });

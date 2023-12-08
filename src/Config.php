@@ -5,7 +5,12 @@ use \Dotenv\Dotenv;
 class Config {
 	static $attributes = [];
 	static function get($key, $default = null) {
-		return self::$attributes[$key] ?? $_ENV["RIP_{$key}"] ?? $_ENV["RESTINPEACE_{$key}"] ?? $_ENV[$key] ?? $default;
+		$result = self::$attributes[$key] ?? $_ENV["RIP_{$key}"] ?? $_ENV["RESTINPEACE_{$key}"] ?? $_ENV[$key] ?? $default;
+		if ($result === 'false') return false;
+		if ($result === 'true') return true;
+		if (is_bool($result)) return boolval($result);
+		if (is_numeric($result)) return floatval($result);
+		return $result;
 	}
 	function __get($key) {
 		return self::get($key);
