@@ -25,10 +25,31 @@ abstract class Database {
 	}
 	abstract function newPDO($options = []);
 	public function normalizeQuery($query) {
-		if (is_array($query)) {
-			$query = implode(' ', $query);
-		}
-		return $query;
+		if (is_string($query)) return $query;
+		$query = array_map(function ($key, $item) {
+			if (is_numeric($key)) {
+				return $item;
+			}
+			if ($key === 'WHERE') {
+				return $key . ' ' . self::normalizeWhere($item);
+			}
+			if (is_array($item)) {
+				$item = implode(',', $item);
+			}
+			return $key . ' ' . $item;
+		}, array_keys($query), $query);
+		return implode(' ', $query);
+	}
+	static public function normalizeWhere($where, $op = 0) {
+		if (is_string($where)) return $where;
+		
+		$ops = [' AND ', ' OR ', ];
+		
+		$where = array_map(function ($item) use ($op) {
+			if (is_string($item)) return $item;
+			return self::normalizeWhere($item, 1 - $op);
+		}, $where);
+		return sprintf("(%s)", implode($ops[$op], $where));
 	}
 	static public function findSuffixe($viewName, $tableName = '') {
 		if ($tableName) {
@@ -48,7 +69,7 @@ abstract class Database {
 			$table_views = array_filter($table_views);
 			$table['views'] = array_flip($table_views);
 			if (!Config::get('KEEP_ALL_VIEWS', false)) {
-				foreach($table['views'] as $suffixe => $viewName) {
+				foreach ($table['views'] as $suffixe => $viewName) {
 					$table['views'][$suffixe] = $views[$viewName];
 					unset($views[$viewName]);
 				}
@@ -73,7 +94,6 @@ abstract class Database {
 	}
 	public function execute($query, ...$data) {
 		$query = $this->normalizeQuery($query);
-
 		try {
 			$statement = $this->prepare($query);
 			if (count($data, COUNT_RECURSIVE) > count($data)) {

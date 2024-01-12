@@ -61,12 +61,11 @@ class Table {
 			$tableName = $this->name;
 		}
 		$cols = self::getCols();
-		
-		$query['SELECT'] = [
-			sprintf('%s FROM `%s`', $cols, $tableName),
+
+		$query = [
+			sprintf('SELECT %s FROM `%s`', $cols, $tableName),
 		];
 		self::addParams($query);
-		// vd($query);
 		$result = $this->database->execute($query);
 
 		if ($result === false) {
@@ -88,20 +87,18 @@ class Table {
 		$cols = self::getCols();
 		
 		$query['SELECT'] = sprintf('%s FROM `%s`', $cols, $tableName);
-		$query['WHERE'] = sprintf('`%s` = ?', $this->primary_key);
+		$query['WHERE'] = [sprintf('`%s` = ?', $this->primary_key), sprintf('`%s` = ?', $this->primary_key), ];
 
 		self::addParams($query);
-		$result = [$query];
 		$result = $this->database->execute($query, [$id]);
-		// $result = [$query];
 
-		// if ($result === false) {
-		// 	return Response::replyCode(404);
-		// }
+		if ($result === false) {
+			return Response::replyCode(404);
+		}
 
-		// if (empty($result)) {
-		// 	return Response::replyCode(204);
-		// }
+		if (empty($result)) {
+			return Response::replyCode(204);
+		}
 		return $result;
 	}
 	static function fromConfig($config, $database) {

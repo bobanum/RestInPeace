@@ -10,6 +10,7 @@ class RestInPeace {
 	protected static $db = null;
 	public static $included_tables = [];
 	public static $excluded_tables = [];
+	public static $hidden_tables = [];
 
 	static public function guard() {
 	}
@@ -38,7 +39,7 @@ class RestInPeace {
 		if (!file_exists($result)) {
 			$result = $path;
 		}
-		$result = str_replace('\\','/',realpath($result) ?: $result);
+		$result = str_replace('\\', '/', realpath($result) ?: $result);
 		if (!empty($file)) {
 			$result .= "/" . $file;
 		}
@@ -87,13 +88,29 @@ class RestInPeace {
 		$result = $table->all($suffix);
 		////
 		// Adding HATEOAS
-		array_walk($result, function (&$row) use ($table) {
-			$row['url'] = sprintf("%s/%s/%s", self::$root, $table->name, $row['id']);
-		});
+		$table->addHateoasArray($result);
+
 		$result = [
 			"count" => count($result),
+			"url" => $table->getUrl(),
 			"results" => $result,
 		];
+		return Response::reply($result);
+	}
+	static function actionGetOne($table, $id, $suffix = "index") {
+		$schema = self::getSchema();
+		
+		if (!isset($schema['tables'][$table])) {
+			return Response::replyCode(404);
+		}
+		self::connect();
+		$table = Table::fromConfig($schema['tables'][$table], self::$db);
+		$result = $table->find($id, $suffix);
+		// vdd($table);
+		////
+		// Adding HATEOAS
+		$table->addHateoasArray($result);
+
 		return Response::reply($result);
 	}
 	public static function analyseDb() {
@@ -145,15 +162,15 @@ class RestInPeace {
 		return self::$db;
 	}
 	static public function getSchema() {
-		$filepath = self::config_path(basename(Config::get('DB_DATABASE', 'schema')).'.json');
-		if (file_exists($filepath) && time() - filemtime($filepath) < Config::get('SCHEMA_CACHE', self::SCHEMA_CACHE)) {
-			return json_decode(file_get_contents($filepath), true);
-		} else {
-			$schema = self::analyseDb();
-			$schema['updated_at'] = time();
-			file_put_contents($filepath, json_encode($schema));
+		$filename = sprintf("schema.%s.php", basename(Config::get('DB_DATABASE', 'schema')));
+		$schema = config::load($filename, true);
+		if ($schema !== false) {
 			return $schema;
 		}
+		$schema = self::analyseDb();
+		$schema['updated_at'] = time();
+		Config::output($filename, $schema);
+		return $schema;
 	}
 	static public function isValidTable($table) {
 		if (empty(self::$included_tables) && empty(self::$excluded_tables)) {
@@ -166,6 +183,18 @@ class RestInPeace {
 			return !in_array($table, self::$excluded_tables);
 		}
 		return false;
+	}
+	static public function isVisible($table) {
+		if (!is_array($table)) {
+			$table = self::getSchema()['tables'][$table];
+		}
+		if (!empty(self::$hidden_tables) && in_array($table['name'], self::$hidden_tables)) {
+			return false;
+		}
+		if (!empty($table['is_junction_table'])) {
+			return false;
+		}
+		return true;
 	}
 	public static function init() {
 		self::checkClients();
@@ -187,7 +216,6 @@ class RestInPeace {
 		$host = $_SERVER['HTTP_HOST'];
 		$protocol = $_SERVER['REQUEST_SCHEME'] ?? 'http';
 		self::$root = sprintf('%s://%s', $protocol, $host);
-		// exit(self::$root);
 	}
 }
 RestInPeace::init();

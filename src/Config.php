@@ -1,6 +1,9 @@
 <?php
+
 namespace RestInPeace;
+
 use \Dotenv\Dotenv;
+use RestInPeace\RestInPeace as RIP;
 
 class Config {
 	static $attributes = [];
@@ -22,6 +25,34 @@ class Config {
 		$dotenv = Dotenv::createImmutable(dirname(__DIR__));
 		$dotenv->load();
 		return;
+	}
+	static public function path($path = '') {
+		return RIP::absolutePath(self::get('CONFIG_PATH', 'config'), $path);
+	}
+	static public function isTimedOut($filename) {
+		$timeout = self::get('SCHEMA_CACHE', RIP::SCHEMA_CACHE);
+		$filepath = self::path($filename);
+		if (!file_exists($filepath)) return true;
+		if (time() - filemtime($filepath) < $timeout) return false;
+		return true;
+	}
+	static public function load($filename, $checkTimeout = true) {
+		$filepath = self::path($filename);
+		if (!file_exists($filepath)) return false;
+		if ($checkTimeout && self::isTimedOut($filename)) return false;
+		return include $filepath;
+	}
+	public static function output($filename, $data) {
+		// $filename = sprintf("schema.%s.php", basename(Config::get('DB_DATABASE', 'schema')));
+		$filepath = self::path($filename);
+		$output = "\n" . var_export($data, true) . ";";
+		$output = preg_replace('~((?:\r\n|\n\r|\r|\n)\s*)array \(~', '[', $output);
+		$output = preg_replace('~((?:\r\n|\n\r|\r|\n)\s*)\)([\,\;])~', '$1]$2', $output);
+		$output = str_replace('  ', "\t", $output);
+		$output = trim($output);
+		$output = "<?php\nreturn " . $output;
+		file_put_contents($filepath, $output);
+		return $data;
 	}
 	public static function getParams() {
 		$query = [];
