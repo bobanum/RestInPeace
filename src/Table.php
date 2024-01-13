@@ -10,6 +10,7 @@ class Table {
 	private $_primary_key = [];
 	public $foreign_keys = [];
 	public $views = [];
+	public $schema = [];
 	public Database $database;
 	function __construct($database) {
 		$this->database = $database;
@@ -19,6 +20,17 @@ class Table {
 	}
 	function set_primary_key($value) {
 		$this->_primary_key = $value;
+	}
+	static function isJunctionTable($table) {
+		$columns = $table['columns'];
+		$columns = array_filter($columns, function ($column) {
+			$exclude = ['id', 'created_at', 'updated_at'];
+			if (in_array($column['name'], $exclude)) return false;
+			if ($column['pk'] === 1) return false;
+			if (substr($column['name'], -3) === '_id') return false;
+			return true;
+		});
+		return count($columns) === 0;
 	}
 	public static function getCols($implode = true) {
 		if (!isset($_GET['cols'])) {
@@ -53,7 +65,7 @@ class Table {
 		}
 		return $query;
 	}
-	function all($suffix = "index") {
+	function all($suffix = "index", $params = []) {
 		$query = [];
 		if (isset($this->views[$suffix])) {
 			$tableName = $this->views[$suffix]['name'];
@@ -65,8 +77,9 @@ class Table {
 		$query['SELECT'] = [
 			sprintf('%s FROM `%s`', $cols, $tableName),
 		];
+		self::addParams($query, $params);
 		self::addParams($query);
-		// vd($query);
+		return($query);
 		$result = $this->database->execute($query);
 
 		if ($result === false) {

@@ -78,14 +78,14 @@ class RestInPeace {
 		}
 		return $query;
 	}
-	static function actionGetAll($table, $suffix = "index") {
+	static function getAll($table, $suffix = "index") {
 		$schema = self::getSchema();
 		if (!isset($schema['tables'][$table])) {
 			return Response::replyCode(404);
 		}
 		self::connect();
 		$table = Table::fromConfig($schema['tables'][$table], self::$db);
-		$result = $table->all($suffix);
+		$result = $table->all($suffix, ['id'=>1, 'limit'=>10, 'offset'=>0, 'by'=>'id', 'order'=>'ASC']);
 		////
 		// Adding HATEOAS
 		$table->addHateoasArray($result);
@@ -95,9 +95,9 @@ class RestInPeace {
 			"url" => $table->getUrl(),
 			"results" => $result,
 		];
-		return Response::reply($result);
+		return $result;
 	}
-	static function actionGetOne($table, $id, $suffix = "index") {
+	static function getOne($table, $id, $suffix = "index") {
 		$schema = self::getSchema();
 		
 		if (!isset($schema['tables'][$table])) {
@@ -111,7 +111,25 @@ class RestInPeace {
 		// Adding HATEOAS
 		$table->addHateoasArray($result);
 
-		return Response::reply($result);
+		return $result;
+	}
+	static function getSome($table, $id, $foreign_table, $suffix = "index") {
+		$schema = self::getSchema();
+		
+		if (!isset($schema['tables'][$table])) {
+			return Response::replyCode(404);
+		}
+		$table = $schema['tables'][$table];
+		return $table;
+		self::connect();
+		$table = Table::fromConfig($schema['tables'][$table], self::$db);
+		// vdd($table);
+		$result = $table->find($id, $suffix);
+		////
+		// Adding HATEOAS
+		// $table->addHateoasArray($result);
+
+		return $result;
 	}
 	public static function analyseDb() {
 		return self::$db->analyse();

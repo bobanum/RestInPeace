@@ -83,8 +83,8 @@ class DatabaseSqlite extends Database {
 			}
 			$table = array_diff_key($table, $keys);
 			$table['columns'] = $this->getColumns($name);
-			$table['is_junction_table'] = self::isJunctionTable($table['columns']);
-			$table['indexes'] = $this->getIndexes($name);
+			$table['is_junction_table'] = Table::isJunctionTable($table);
+			// $table['indexes'] = $this->getIndexes($name);
 			$table['primary_key'] = $this->getPrimaryKey($name);
 			$tables[$name] = $table;
 		}
@@ -140,16 +140,6 @@ class DatabaseSqlite extends Database {
 			$columns[$column['name']] = $column;
 		}
 		return $columns;
-	}
-	static function isJunctionTable($columns) {
-		$columns = array_filter($columns, function ($column) {
-			$exclude = ['id', 'created_at', 'updated_at'];
-			if (in_array($column['name'], $exclude)) return false;
-			if ($column['pk'] === 1) return false;
-			if (substr($column['name'], -3) === '_id') return false;
-			return true;
-		});
-		return count($columns) === 0;
 	}
 	public function getIndexes($table) {
 		$query = "PRAGMA index_list(`$table`)";

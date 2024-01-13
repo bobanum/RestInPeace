@@ -6,6 +6,7 @@ abstract class Database {
 	use HasAccessors;
 	public $_pdo;
 	public $statements = [];
+	public $schema = [];
 	public function __construct() {
 		$this->_pdo = $this->newPDO();
 	}
@@ -74,6 +75,11 @@ abstract class Database {
 					unset($views[$viewName]);
 				}
 			}
+		}
+		// Reanalyse to complete foreign keys and foreign tables
+		foreach ($tables as &$table) {
+			$tableName = $table['name'];
+			vd($tableName);
 		}
 		return [
 			"tables" => $tables,

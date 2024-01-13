@@ -48,15 +48,6 @@ return [
 				],
 			],
 			'is_junction_table' => false,
-			'indexes' => [
-				'sqlite_autoindex_comment_result_1' => [
-					'seq' => 0,
-					'name' => 'sqlite_autoindex_comment_result_1',
-					'unique' => 1,
-					'origin' => 'pk',
-					'partial' => 0,
-				],
-			],
 			'primary_key' => [
 				0 => 'id',
 			],
@@ -140,15 +131,6 @@ return [
 				],
 			],
 			'is_junction_table' => false,
-			'indexes' => [
-				'sqlite_autoindex_comments_1' => [
-					'seq' => 0,
-					'name' => 'sqlite_autoindex_comments_1',
-					'unique' => 1,
-					'origin' => 'pk',
-					'partial' => 0,
-				],
-			],
 			'primary_key' => [
 				0 => 'id',
 			],
@@ -197,15 +179,6 @@ return [
 				],
 			],
 			'is_junction_table' => true,
-			'indexes' => [
-				'sqlite_autoindex_course_semester_1' => [
-					'seq' => 0,
-					'name' => 'sqlite_autoindex_course_semester_1',
-					'unique' => 1,
-					'origin' => 'pk',
-					'partial' => 0,
-				],
-			],
 			'primary_key' => [
 				0 => 'id',
 			],
@@ -275,15 +248,6 @@ return [
 				],
 			],
 			'is_junction_table' => false,
-			'indexes' => [
-				'sqlite_autoindex_courses_1' => [
-					'seq' => 0,
-					'name' => 'sqlite_autoindex_courses_1',
-					'unique' => 1,
-					'origin' => 'pk',
-					'partial' => 0,
-				],
-			],
 			'primary_key' => [
 				0 => 'id',
 			],
@@ -353,15 +317,6 @@ return [
 				],
 			],
 			'is_junction_table' => false,
-			'indexes' => [
-				'sqlite_autoindex_departments_1' => [
-					'seq' => 0,
-					'name' => 'sqlite_autoindex_departments_1',
-					'unique' => 1,
-					'origin' => 'pk',
-					'partial' => 0,
-				],
-			],
 			'primary_key' => [
 				0 => 'id',
 			],
@@ -417,15 +372,6 @@ return [
 				],
 			],
 			'is_junction_table' => false,
-			'indexes' => [
-				'sqlite_autoindex_evaluation_teacher_1' => [
-					'seq' => 0,
-					'name' => 'sqlite_autoindex_evaluation_teacher_1',
-					'unique' => 1,
-					'origin' => 'pk',
-					'partial' => 0,
-				],
-			],
 			'primary_key' => [
 				0 => 'id',
 			],
@@ -495,15 +441,6 @@ return [
 				],
 			],
 			'is_junction_table' => false,
-			'indexes' => [
-				'sqlite_autoindex_evaluations_1' => [
-					'seq' => 0,
-					'name' => 'sqlite_autoindex_evaluations_1',
-					'unique' => 1,
-					'origin' => 'pk',
-					'partial' => 0,
-				],
-			],
 			'primary_key' => [
 				0 => 'id',
 			],
@@ -552,15 +489,6 @@ return [
 				],
 			],
 			'is_junction_table' => true,
-			'indexes' => [
-				'sqlite_autoindex_group_student_1' => [
-					'seq' => 0,
-					'name' => 'sqlite_autoindex_group_student_1',
-					'unique' => 1,
-					'origin' => 'pk',
-					'partial' => 0,
-				],
-			],
 			'primary_key' => [
 				0 => 'id',
 			],
@@ -623,15 +551,6 @@ return [
 				],
 			],
 			'is_junction_table' => false,
-			'indexes' => [
-				'sqlite_autoindex_groups_1' => [
-					'seq' => 0,
-					'name' => 'sqlite_autoindex_groups_1',
-					'unique' => 1,
-					'origin' => 'pk',
-					'partial' => 0,
-				],
-			],
 			'primary_key' => [
 				0 => 'id',
 			],
@@ -708,15 +627,6 @@ return [
 				],
 			],
 			'is_junction_table' => false,
-			'indexes' => [
-				'sqlite_autoindex_parameters_1' => [
-					'seq' => 0,
-					'name' => 'sqlite_autoindex_parameters_1',
-					'unique' => 1,
-					'origin' => 'pk',
-					'partial' => 0,
-				],
-			],
 			'primary_key' => [
 				0 => 'id',
 			],
@@ -779,15 +689,6 @@ return [
 				],
 			],
 			'is_junction_table' => false,
-			'indexes' => [
-				'sqlite_autoindex_results_1' => [
-					'seq' => 0,
-					'name' => 'sqlite_autoindex_results_1',
-					'unique' => 1,
-					'origin' => 'pk',
-					'partial' => 0,
-				],
-			],
 			'primary_key' => [
 				0 => 'id',
 			],
@@ -850,15 +751,6 @@ return [
 				],
 			],
 			'is_junction_table' => false,
-			'indexes' => [
-				'sqlite_autoindex_schools_1' => [
-					'seq' => 0,
-					'name' => 'sqlite_autoindex_schools_1',
-					'unique' => 1,
-					'origin' => 'pk',
-					'partial' => 0,
-				],
-			],
 			'primary_key' => [
 				0 => 'id',
 			],
@@ -921,15 +813,6 @@ return [
 				],
 			],
 			'is_junction_table' => false,
-			'indexes' => [
-				'sqlite_autoindex_semesters_1' => [
-					'seq' => 0,
-					'name' => 'sqlite_autoindex_semesters_1',
-					'unique' => 1,
-					'origin' => 'pk',
-					'partial' => 0,
-				],
-			],
 			'primary_key' => [
 				0 => 'id',
 			],
@@ -1013,15 +896,6 @@ return [
 				],
 			],
 			'is_junction_table' => false,
-			'indexes' => [
-				'sqlite_autoindex_students_1' => [
-					'seq' => 0,
-					'name' => 'sqlite_autoindex_students_1',
-					'unique' => 1,
-					'origin' => 'pk',
-					'partial' => 0,
-				],
-			],
 			'primary_key' => [
 				0 => 'id',
 			],
@@ -1105,19 +979,20 @@ return [
 				],
 			],
 			'is_junction_table' => false,
-			'indexes' => [
-				'sqlite_autoindex_teachers_1' => [
-					'seq' => 0,
-					'name' => 'sqlite_autoindex_teachers_1',
-					'unique' => 1,
-					'origin' => 'pk',
-					'partial' => 0,
-				],
-			],
 			'primary_key' => [
 				0 => 'id',
 			],
 			'foreign_keys' => [
+				'department_id' => [
+					'id' => 0,
+					'seq' => 0,
+					'table' => 'departments',
+					'from' => 'department_id',
+					'to' => 'id',
+					'on_update' => 'NO ACTION',
+					'on_delete' => 'NO ACTION',
+					'match' => 'NONE',
+				],
 			],
 			'views' => [
 			],
@@ -1134,8 +1009,6 @@ return [
 				],
 			],
 			'is_junction_table' => true,
-			'indexes' => [
-			],
 			'primary_key' => [
 				0 => 'Field1',
 			],
@@ -1212,15 +1085,6 @@ return [
 				],
 			],
 			'is_junction_table' => false,
-			'indexes' => [
-				'sqlite_autoindex_users_1' => [
-					'seq' => 0,
-					'name' => 'sqlite_autoindex_users_1',
-					'unique' => 1,
-					'origin' => 'pk',
-					'partial' => 0,
-				],
-			],
 			'primary_key' => [
 				0 => 'id',
 			],
@@ -1265,5 +1129,5 @@ return [
 	],
 	'views' => [
 	],
-	'updated_at' => 1705041984,
+	'updated_at' => 1705159617,
 ];
