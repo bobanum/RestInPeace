@@ -84,7 +84,7 @@ class RestInPeace {
 			return Response::replyCode(404);
 		}
 		self::connect();
-		$table = Table::fromConfig($schema['tables'][$table], self::$db);
+		$table = Table::from($schema['tables'][$table], self::$db);
 		$result = $table->all($suffix, ['id'=>1, 'limit'=>10, 'offset'=>0, 'by'=>'id', 'order'=>'ASC']);
 		////
 		// Adding HATEOAS
@@ -104,7 +104,7 @@ class RestInPeace {
 			return Response::replyCode(404);
 		}
 		self::connect();
-		$table = Table::fromConfig($schema['tables'][$table], self::$db);
+		$table = Table::from($schema['tables'][$table], self::$db);
 		$result = $table->find($id, $suffix);
 		// vdd($table);
 		////
@@ -122,7 +122,7 @@ class RestInPeace {
 		$table = $schema['tables'][$table];
 		return $table;
 		self::connect();
-		$table = Table::fromConfig($schema['tables'][$table], self::$db);
+		$table = Table::from($schema['tables'][$table], self::$db);
 		// vdd($table);
 		$result = $table->find($id, $suffix);
 		////
@@ -203,13 +203,15 @@ class RestInPeace {
 		return false;
 	}
 	static public function isVisible($table) {
-		if (!is_array($table)) {
+		if (is_string($table)) {
 			$table = self::getSchema()['tables'][$table];
 		}
-		if (!empty(self::$hidden_tables) && in_array($table['name'], self::$hidden_tables)) {
+		$table = Table::from($table);
+		if (!empty(self::$hidden_tables) && in_array($table->name, self::$hidden_tables)) {
+			vdd($table);
 			return false;
 		}
-		if (!empty($table['is_junction_table'])) {
+		if (!empty($table->is_junction_table)) {
 			return false;
 		}
 		return true;

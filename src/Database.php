@@ -4,9 +4,12 @@ namespace RestInPeace;
 
 abstract class Database {
 	use HasAccessors;
-	public $_pdo;
-	public $statements = [];
+	static private $primary_key_pattern = '^id$';	// A regex pattern to match primary keys
+	private $_pdo;
+	private $statements = [];
 	public $schema = [];
+	private $tables = null;
+	public $views = null;
 	public function __construct() {
 		$this->_pdo = $this->newPDO();
 	}
@@ -53,10 +56,8 @@ abstract class Database {
 		return sprintf("(%s)", implode($ops[$op], $where));
 	}
 	static public function findSuffixe($viewName, $tableName = '') {
-		if ($tableName) {
-			$tableName = '^' . $tableName;
-		}
-		if (preg_match("~{$tableName}__([a-z]+)$~", $viewName, $matches)) {
+		$regex = sprintf("~^%s__([a-z]+)$~", $tableName);
+		if (preg_match($regex, $viewName, $matches)) {
 			return $matches[1];
 		}
 		return false;
@@ -64,22 +65,15 @@ abstract class Database {
 	public function analyse() {
 		$tables = $this->getTables();
 		$views = $this->getViews();
+		// $indexes = $this->getIndexes();
 		foreach ($tables as &$table) {
-			$tableName = $table['name'];
-			$table_views = array_map(fn ($view) => self::findSuffixe($view['name'], $tableName), $views);
-			$table_views = array_filter($table_views);
-			$table['views'] = array_flip($table_views);
-			if (!Config::get('KEEP_ALL_VIEWS', false)) {
-				foreach ($table['views'] as $suffixe => $viewName) {
-					$table['views'][$suffixe] = $views[$viewName];
-					unset($views[$viewName]);
-				}
-			}
+			if (empty($views)) break;	// If we just removed the last view
+			$table->processSuffixedViews($views);
 		}
 		// Reanalyse to complete foreign keys and foreign tables
 		foreach ($tables as &$table) {
-			$tableName = $table['name'];
-			vd($tableName);
+			// $tableName = $table->name;
+			// vd($tableName);
 		}
 		return [
 			"tables" => $tables,
@@ -90,6 +84,7 @@ abstract class Database {
 	abstract public function getViews();
 	abstract public function getColumns($table);
 	abstract public function getIndexes($table);
+	abstract public function getPrimaryKey($table);
 
 	public function prepare($query) {
 		$hash = crc32($query);

@@ -7,6 +7,7 @@ return [
 				'id' => [
 					'cid' => 0,
 					'name' => 'id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 1,
@@ -14,6 +15,7 @@ return [
 				'comment_id' => [
 					'cid' => 1,
 					'name' => 'comment_id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -21,6 +23,7 @@ return [
 				'result_id' => [
 					'cid' => 2,
 					'name' => 'result_id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -28,6 +31,7 @@ return [
 				'special_value' => [
 					'cid' => 3,
 					'name' => 'special_value',
+					'type' => 'decimal(8,2)',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -35,6 +39,7 @@ return [
 				'created_at' => [
 					'cid' => 4,
 					'name' => 'created_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -42,14 +47,13 @@ return [
 				'updated_at' => [
 					'cid' => 5,
 					'name' => 'updated_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
 				],
 			],
-			'is_junction_table' => false,
-			'primary_key' => [
-				0 => 'id',
+			'indexes' => [
 			],
 			'foreign_keys' => [
 			],
@@ -62,6 +66,7 @@ return [
 				'id' => [
 					'cid' => 0,
 					'name' => 'id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 1,
@@ -69,6 +74,7 @@ return [
 				'wording' => [
 					'cid' => 1,
 					'name' => 'wording',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -76,6 +82,7 @@ return [
 				'abbr' => [
 					'cid' => 2,
 					'name' => 'abbr',
+					'type' => 'varchar(255)',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -83,6 +90,7 @@ return [
 				'details' => [
 					'cid' => 3,
 					'name' => 'details',
+					'type' => 'TEXT',
 					'notnull' => 0,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -90,6 +98,7 @@ return [
 				'parameter_id' => [
 					'cid' => 4,
 					'name' => 'parameter_id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -97,6 +106,7 @@ return [
 				'value' => [
 					'cid' => 5,
 					'name' => 'value',
+					'type' => 'decimal(8,2)',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -104,6 +114,7 @@ return [
 				'relative' => [
 					'cid' => 6,
 					'name' => 'relative',
+					'type' => 'tinyint(1)',
 					'notnull' => 1,
 					'dflt_value' => '\'1\'',
 					'pk' => 0,
@@ -111,6 +122,7 @@ return [
 				'proportional' => [
 					'cid' => 7,
 					'name' => 'proportional',
+					'type' => 'tinyint(1)',
 					'notnull' => 1,
 					'dflt_value' => '\'0\'',
 					'pk' => 0,
@@ -118,6 +130,7 @@ return [
 				'created_at' => [
 					'cid' => 8,
 					'name' => 'created_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -125,14 +138,13 @@ return [
 				'updated_at' => [
 					'cid' => 9,
 					'name' => 'updated_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
 				],
 			],
-			'is_junction_table' => false,
-			'primary_key' => [
-				0 => 'id',
+			'indexes' => [
 			],
 			'foreign_keys' => [
 			],
@@ -145,6 +157,7 @@ return [
 				'id' => [
 					'cid' => 0,
 					'name' => 'id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 1,
@@ -152,6 +165,7 @@ return [
 				'course_id' => [
 					'cid' => 1,
 					'name' => 'course_id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -159,6 +173,7 @@ return [
 				'semester_id' => [
 					'cid' => 2,
 					'name' => 'semester_id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -166,6 +181,7 @@ return [
 				'created_at' => [
 					'cid' => 3,
 					'name' => 'created_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -173,14 +189,13 @@ return [
 				'updated_at' => [
 					'cid' => 4,
 					'name' => 'updated_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
 				],
 			],
-			'is_junction_table' => true,
-			'primary_key' => [
-				0 => 'id',
+			'indexes' => [
 			],
 			'foreign_keys' => [
 			],
@@ -193,6 +208,7 @@ return [
 				'id' => [
 					'cid' => 0,
 					'name' => 'id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 1,
@@ -200,6 +216,7 @@ return [
 				'code' => [
 					'cid' => 1,
 					'name' => 'code',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -207,6 +224,7 @@ return [
 				'title' => [
 					'cid' => 2,
 					'name' => 'title',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -214,6 +232,7 @@ return [
 				'abbr' => [
 					'cid' => 3,
 					'name' => 'abbr',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -221,6 +240,7 @@ return [
 				'slug' => [
 					'cid' => 4,
 					'name' => 'slug',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -228,6 +248,7 @@ return [
 				'department_id' => [
 					'cid' => 5,
 					'name' => 'department_id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -235,6 +256,7 @@ return [
 				'created_at' => [
 					'cid' => 6,
 					'name' => 'created_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -242,14 +264,13 @@ return [
 				'updated_at' => [
 					'cid' => 7,
 					'name' => 'updated_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
 				],
 			],
-			'is_junction_table' => false,
-			'primary_key' => [
-				0 => 'id',
+			'indexes' => [
 			],
 			'foreign_keys' => [
 			],
@@ -262,6 +283,7 @@ return [
 				'id' => [
 					'cid' => 0,
 					'name' => 'id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 1,
@@ -269,6 +291,7 @@ return [
 				'code' => [
 					'cid' => 1,
 					'name' => 'code',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -276,6 +299,7 @@ return [
 				'name' => [
 					'cid' => 2,
 					'name' => 'name',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -283,6 +307,7 @@ return [
 				'abbr' => [
 					'cid' => 3,
 					'name' => 'abbr',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -290,6 +315,7 @@ return [
 				'slug' => [
 					'cid' => 4,
 					'name' => 'slug',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -297,6 +323,7 @@ return [
 				'school_id' => [
 					'cid' => 5,
 					'name' => 'school_id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -304,6 +331,7 @@ return [
 				'created_at' => [
 					'cid' => 6,
 					'name' => 'created_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -311,14 +339,13 @@ return [
 				'updated_at' => [
 					'cid' => 7,
 					'name' => 'updated_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
 				],
 			],
-			'is_junction_table' => false,
-			'primary_key' => [
-				0 => 'id',
+			'indexes' => [
 			],
 			'foreign_keys' => [
 			],
@@ -331,6 +358,7 @@ return [
 				'id' => [
 					'cid' => 0,
 					'name' => 'id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 1,
@@ -338,6 +366,7 @@ return [
 				'evaluation_id' => [
 					'cid' => 1,
 					'name' => 'evaluation_id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -345,6 +374,7 @@ return [
 				'teacher_id' => [
 					'cid' => 2,
 					'name' => 'teacher_id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -352,6 +382,7 @@ return [
 				'role' => [
 					'cid' => 3,
 					'name' => 'role',
+					'type' => 'INT',
 					'notnull' => 1,
 					'dflt_value' => '\'1\'',
 					'pk' => 0,
@@ -359,6 +390,7 @@ return [
 				'created_at' => [
 					'cid' => 4,
 					'name' => 'created_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -366,14 +398,13 @@ return [
 				'updated_at' => [
 					'cid' => 5,
 					'name' => 'updated_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
 				],
 			],
-			'is_junction_table' => false,
-			'primary_key' => [
-				0 => 'id',
+			'indexes' => [
 			],
 			'foreign_keys' => [
 			],
@@ -386,6 +417,7 @@ return [
 				'id' => [
 					'cid' => 0,
 					'name' => 'id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 1,
@@ -393,6 +425,7 @@ return [
 				'title' => [
 					'cid' => 1,
 					'name' => 'title',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -400,6 +433,7 @@ return [
 				'description' => [
 					'cid' => 2,
 					'name' => 'description',
+					'type' => 'TEXT',
 					'notnull' => 0,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -407,6 +441,7 @@ return [
 				'course_id' => [
 					'cid' => 3,
 					'name' => 'course_id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -414,6 +449,7 @@ return [
 				'teacher_id' => [
 					'cid' => 4,
 					'name' => 'teacher_id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -421,6 +457,7 @@ return [
 				'parameter_id' => [
 					'cid' => 5,
 					'name' => 'parameter_id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -428,6 +465,7 @@ return [
 				'created_at' => [
 					'cid' => 6,
 					'name' => 'created_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -435,14 +473,13 @@ return [
 				'updated_at' => [
 					'cid' => 7,
 					'name' => 'updated_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
 				],
 			],
-			'is_junction_table' => false,
-			'primary_key' => [
-				0 => 'id',
+			'indexes' => [
 			],
 			'foreign_keys' => [
 			],
@@ -455,6 +492,7 @@ return [
 				'id' => [
 					'cid' => 0,
 					'name' => 'id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 1,
@@ -462,6 +500,7 @@ return [
 				'group_id' => [
 					'cid' => 1,
 					'name' => 'group_id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -469,6 +508,7 @@ return [
 				'student_id' => [
 					'cid' => 2,
 					'name' => 'student_id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -476,6 +516,7 @@ return [
 				'created_at' => [
 					'cid' => 3,
 					'name' => 'created_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -483,14 +524,13 @@ return [
 				'updated_at' => [
 					'cid' => 4,
 					'name' => 'updated_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
 				],
 			],
-			'is_junction_table' => true,
-			'primary_key' => [
-				0 => 'id',
+			'indexes' => [
 			],
 			'foreign_keys' => [
 			],
@@ -503,6 +543,7 @@ return [
 				'id' => [
 					'cid' => 0,
 					'name' => 'id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 1,
@@ -510,6 +551,7 @@ return [
 				'number' => [
 					'cid' => 1,
 					'name' => 'number',
+					'type' => 'int UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -517,6 +559,7 @@ return [
 				'schedule' => [
 					'cid' => 2,
 					'name' => 'schedule',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -524,6 +567,7 @@ return [
 				'teacher_id' => [
 					'cid' => 3,
 					'name' => 'teacher_id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -531,6 +575,7 @@ return [
 				'course_semester_id' => [
 					'cid' => 4,
 					'name' => 'course_semester_id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -538,6 +583,7 @@ return [
 				'created_at' => [
 					'cid' => 5,
 					'name' => 'created_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -545,14 +591,13 @@ return [
 				'updated_at' => [
 					'cid' => 6,
 					'name' => 'updated_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
 				],
 			],
-			'is_junction_table' => false,
-			'primary_key' => [
-				0 => 'id',
+			'indexes' => [
 			],
 			'foreign_keys' => [
 			],
@@ -565,6 +610,7 @@ return [
 				'id' => [
 					'cid' => 0,
 					'name' => 'id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 1,
@@ -572,6 +618,7 @@ return [
 				'parent_id' => [
 					'cid' => 1,
 					'name' => 'parent_id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -579,6 +626,7 @@ return [
 				'wording' => [
 					'cid' => 2,
 					'name' => 'wording',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -586,6 +634,7 @@ return [
 				'description' => [
 					'cid' => 3,
 					'name' => 'description',
+					'type' => 'TEXT',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -593,6 +642,7 @@ return [
 				'uuid' => [
 					'cid' => 4,
 					'name' => 'uuid',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -600,6 +650,7 @@ return [
 				'helpers' => [
 					'cid' => 5,
 					'name' => 'helpers',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => '\'\'',
 					'pk' => 0,
@@ -607,6 +658,7 @@ return [
 				'value' => [
 					'cid' => 6,
 					'name' => 'value',
+					'type' => 'decimal(8,2)',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -614,6 +666,7 @@ return [
 				'created_at' => [
 					'cid' => 7,
 					'name' => 'created_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -621,14 +674,13 @@ return [
 				'updated_at' => [
 					'cid' => 8,
 					'name' => 'updated_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
 				],
 			],
-			'is_junction_table' => false,
-			'primary_key' => [
-				0 => 'id',
+			'indexes' => [
 			],
 			'foreign_keys' => [
 			],
@@ -641,6 +693,7 @@ return [
 				'id' => [
 					'cid' => 0,
 					'name' => 'id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 1,
@@ -648,6 +701,7 @@ return [
 				'parameter_id' => [
 					'cid' => 1,
 					'name' => 'parameter_id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -655,6 +709,7 @@ return [
 				'student_id' => [
 					'cid' => 2,
 					'name' => 'student_id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -662,6 +717,7 @@ return [
 				'value' => [
 					'cid' => 3,
 					'name' => 'value',
+					'type' => 'decimal(8,2)',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -669,6 +725,7 @@ return [
 				'helpers' => [
 					'cid' => 4,
 					'name' => 'helpers',
+					'type' => 'varchar(255)',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -676,6 +733,7 @@ return [
 				'created_at' => [
 					'cid' => 5,
 					'name' => 'created_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -683,14 +741,13 @@ return [
 				'updated_at' => [
 					'cid' => 6,
 					'name' => 'updated_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
 				],
 			],
-			'is_junction_table' => false,
-			'primary_key' => [
-				0 => 'id',
+			'indexes' => [
 			],
 			'foreign_keys' => [
 			],
@@ -703,6 +760,7 @@ return [
 				'id' => [
 					'cid' => 0,
 					'name' => 'id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 1,
@@ -710,6 +768,7 @@ return [
 				'name' => [
 					'cid' => 1,
 					'name' => 'name',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -717,6 +776,7 @@ return [
 				'abbr' => [
 					'cid' => 2,
 					'name' => 'abbr',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -724,6 +784,7 @@ return [
 				'slug' => [
 					'cid' => 3,
 					'name' => 'slug',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -731,6 +792,7 @@ return [
 				'address' => [
 					'cid' => 4,
 					'name' => 'address',
+					'type' => 'varchar(255)',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -738,6 +800,7 @@ return [
 				'created_at' => [
 					'cid' => 5,
 					'name' => 'created_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -745,14 +808,13 @@ return [
 				'updated_at' => [
 					'cid' => 6,
 					'name' => 'updated_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
 				],
 			],
-			'is_junction_table' => false,
-			'primary_key' => [
-				0 => 'id',
+			'indexes' => [
 			],
 			'foreign_keys' => [
 			],
@@ -765,6 +827,7 @@ return [
 				'id' => [
 					'cid' => 0,
 					'name' => 'id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 1,
@@ -772,6 +835,7 @@ return [
 				'year' => [
 					'cid' => 1,
 					'name' => 'year',
+					'type' => 'int UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -779,6 +843,7 @@ return [
 				'label' => [
 					'cid' => 2,
 					'name' => 'label',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -786,6 +851,7 @@ return [
 				'abbr' => [
 					'cid' => 3,
 					'name' => 'abbr',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -793,6 +859,7 @@ return [
 				'school_id' => [
 					'cid' => 4,
 					'name' => 'school_id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -800,6 +867,7 @@ return [
 				'created_at' => [
 					'cid' => 5,
 					'name' => 'created_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -807,14 +875,13 @@ return [
 				'updated_at' => [
 					'cid' => 6,
 					'name' => 'updated_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
 				],
 			],
-			'is_junction_table' => false,
-			'primary_key' => [
-				0 => 'id',
+			'indexes' => [
 			],
 			'foreign_keys' => [
 			],
@@ -827,6 +894,7 @@ return [
 				'id' => [
 					'cid' => 0,
 					'name' => 'id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 1,
@@ -834,6 +902,7 @@ return [
 				'code' => [
 					'cid' => 1,
 					'name' => 'code',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -841,6 +910,7 @@ return [
 				'first_name' => [
 					'cid' => 2,
 					'name' => 'first_name',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -848,6 +918,7 @@ return [
 				'last_name' => [
 					'cid' => 3,
 					'name' => 'last_name',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -855,6 +926,7 @@ return [
 				'slug' => [
 					'cid' => 4,
 					'name' => 'slug',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -862,6 +934,7 @@ return [
 				'address' => [
 					'cid' => 5,
 					'name' => 'address',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -869,6 +942,7 @@ return [
 				'user_id' => [
 					'cid' => 6,
 					'name' => 'user_id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -876,6 +950,7 @@ return [
 				'department_id' => [
 					'cid' => 7,
 					'name' => 'department_id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -883,6 +958,7 @@ return [
 				'created_at' => [
 					'cid' => 8,
 					'name' => 'created_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -890,14 +966,13 @@ return [
 				'updated_at' => [
 					'cid' => 9,
 					'name' => 'updated_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
 				],
 			],
-			'is_junction_table' => false,
-			'primary_key' => [
-				0 => 'id',
+			'indexes' => [
 			],
 			'foreign_keys' => [
 			],
@@ -910,6 +985,7 @@ return [
 				'id' => [
 					'cid' => 0,
 					'name' => 'id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 1,
@@ -917,6 +993,7 @@ return [
 				'code' => [
 					'cid' => 1,
 					'name' => 'code',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -924,6 +1001,7 @@ return [
 				'first_name' => [
 					'cid' => 2,
 					'name' => 'first_name',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -931,6 +1009,7 @@ return [
 				'last_name' => [
 					'cid' => 3,
 					'name' => 'last_name',
+					'type' => 'NUMERIC',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -938,6 +1017,7 @@ return [
 				'slug' => [
 					'cid' => 4,
 					'name' => 'slug',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -945,6 +1025,7 @@ return [
 				'address' => [
 					'cid' => 5,
 					'name' => 'address',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -952,6 +1033,7 @@ return [
 				'user_id' => [
 					'cid' => 6,
 					'name' => 'user_id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -959,6 +1041,7 @@ return [
 				'department_id' => [
 					'cid' => 7,
 					'name' => 'department_id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -966,6 +1049,7 @@ return [
 				'created_at' => [
 					'cid' => 8,
 					'name' => 'created_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -973,26 +1057,15 @@ return [
 				'updated_at' => [
 					'cid' => 9,
 					'name' => 'updated_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
 				],
 			],
-			'is_junction_table' => false,
-			'primary_key' => [
-				0 => 'id',
+			'indexes' => [
 			],
 			'foreign_keys' => [
-				'department_id' => [
-					'id' => 0,
-					'seq' => 0,
-					'table' => 'departments',
-					'from' => 'department_id',
-					'to' => 'id',
-					'on_update' => 'NO ACTION',
-					'on_delete' => 'NO ACTION',
-					'match' => 'NONE',
-				],
 			],
 			'views' => [
 			],
@@ -1003,14 +1076,13 @@ return [
 				'Field1' => [
 					'cid' => 0,
 					'name' => 'Field1',
+					'type' => 'INTEGER',
 					'notnull' => 0,
 					'dflt_value' => NULL,
 					'pk' => 1,
 				],
 			],
-			'is_junction_table' => true,
-			'primary_key' => [
-				0 => 'Field1',
+			'indexes' => [
 			],
 			'foreign_keys' => [
 			],
@@ -1023,6 +1095,7 @@ return [
 				'id' => [
 					'cid' => 0,
 					'name' => 'id',
+					'type' => 'bigint UNSIGNED',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 1,
@@ -1030,6 +1103,7 @@ return [
 				'name' => [
 					'cid' => 1,
 					'name' => 'name',
+					'type' => 'varchar(255)',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -1037,6 +1111,7 @@ return [
 				'email' => [
 					'cid' => 2,
 					'name' => 'email',
+					'type' => 'varchar(191)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -1044,6 +1119,7 @@ return [
 				'email_verified_at' => [
 					'cid' => 3,
 					'name' => 'email_verified_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -1051,6 +1127,7 @@ return [
 				'password' => [
 					'cid' => 4,
 					'name' => 'password',
+					'type' => 'varchar(255)',
 					'notnull' => 1,
 					'dflt_value' => NULL,
 					'pk' => 0,
@@ -1058,6 +1135,7 @@ return [
 				'role' => [
 					'cid' => 5,
 					'name' => 'role',
+					'type' => 'INT',
 					'notnull' => 1,
 					'dflt_value' => '\'1\'',
 					'pk' => 0,
@@ -1065,6 +1143,7 @@ return [
 				'remember_token' => [
 					'cid' => 6,
 					'name' => 'remember_token',
+					'type' => 'varchar(100)',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -1072,6 +1151,7 @@ return [
 				'created_at' => [
 					'cid' => 7,
 					'name' => 'created_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
@@ -1079,14 +1159,13 @@ return [
 				'updated_at' => [
 					'cid' => 8,
 					'name' => 'updated_at',
+					'type' => 'timestamp',
 					'notnull' => 0,
 					'dflt_value' => 'NULL',
 					'pk' => 0,
 				],
 			],
-			'is_junction_table' => false,
-			'primary_key' => [
-				0 => 'id',
+			'indexes' => [
 			],
 			'foreign_keys' => [
 			],
@@ -1097,6 +1176,7 @@ return [
 						'id' => [
 							'cid' => 0,
 							'name' => 'id',
+							'type' => 'bigint UNSIGNED',
 							'notnull' => 0,
 							'dflt_value' => NULL,
 							'pk' => 0,
@@ -1104,6 +1184,7 @@ return [
 						'name' => [
 							'cid' => 1,
 							'name' => 'name',
+							'type' => 'varchar(255)',
 							'notnull' => 0,
 							'dflt_value' => NULL,
 							'pk' => 0,
@@ -1111,6 +1192,7 @@ return [
 						'email' => [
 							'cid' => 2,
 							'name' => 'email',
+							'type' => 'varchar(191)',
 							'notnull' => 0,
 							'dflt_value' => NULL,
 							'pk' => 0,
@@ -1118,10 +1200,15 @@ return [
 						'role' => [
 							'cid' => 3,
 							'name' => 'role',
+							'type' => 'INT',
 							'notnull' => 0,
 							'dflt_value' => NULL,
 							'pk' => 0,
 						],
+					],
+					'indexes' => [
+					],
+					'foreign_keys' => [
 					],
 				],
 			],
@@ -1129,5 +1216,5 @@ return [
 	],
 	'views' => [
 	],
-	'updated_at' => 1705159617,
+	'updated_at' => 1705190378,
 ];

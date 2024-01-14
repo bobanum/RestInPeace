@@ -71,40 +71,41 @@ class DatabaseSqlite extends Database {
 		return new static(Config::get('DB_DATABASE', 'db.sqlite'));
 	}
 	public function getTables() {
-		$query = "SELECT * FROM sqlite_master WHERE type = 'table' ORDER BY name";
-		$result = $this->execute($query);
-		$tables = [];
-
-		$keys = array_flip(self::$excluded_analysis_keys);
-		foreach ($result as $table) {
-			$name = $table['name'];
-			if (!RestInPeace::isValidTable($name)) {
-				continue;
-			}
-			$table = array_diff_key($table, $keys);
-			$table['columns'] = $this->getColumns($name);
-			$table['is_junction_table'] = Table::isJunctionTable($table);
+		$query = "SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name";
+		$tables = $this->execute($query);
+		$tables = array_map(fn($item) => $item['name'], $tables);
+		$tables = array_combine($tables, $tables);
+		$tables = array_map(fn($table) => new Table($this, $table), $tables);
+		array_walk($tables, fn($table) => $table->columns = $this->getColumns($table->name));
+		// array_walk($tables, fn($table) => $table->primary_key = $this->getPrimaryKey($table->name));
+		$tables = array_filter($tables, fn($table) => $table->isValid());
+		// vdd(array_map(fn($item) => $item->primary_key, $tables));
+		// $keys = array_flip(self::$excluded_analysis_keys);
+		// vdd($keys);
+		// foreach ($tables as $tableName) {
+			// $name = $table['name'];
+			
+			// $table = new Table($this, $tableName);
+			// $table['columns'] = $this->getColumns($name);
+			// $table['is_junction_table'] = Table::isJunctionTable($table);
 			// $table['indexes'] = $this->getIndexes($name);
-			$table['primary_key'] = $this->getPrimaryKey($name);
-			$tables[$name] = $table;
-		}
-		foreach ($tables as &$table) {
-			$table['foreign_keys'] = $this->getForeignKeys($table['name']);
-		}
+			// $table['primary_key'] = $this->getPrimaryKey($name);
+			// $tables[$name] = $table;
+		// }
+		// foreach ($tables as &$table) {
+		// 	$table['foreign_keys'] = $this->getForeignKeys($table['name']);
+		// }
 		return $tables;
 	}
 	public function getViews() {
-		$query = "SELECT * FROM sqlite_master WHERE type = 'view' ORDER BY name";
-		$result = $this->execute($query);
-		$views = [];
-
-		$keys = array_flip(self::$excluded_analysis_keys);
-		foreach ($result as $view) {
-			$name = $view['name'];
-			$view = array_diff_key($view, $keys);
-			$view['columns'] = $this->getColumns($name);
-			$views[$name] = $view;
-		}
+		$query = "SELECT name FROM sqlite_master WHERE type = 'view' ORDER BY name";
+		$views = $this->execute($query);
+		$views = array_map(fn($item) => $item['name'], $views);
+		$views = array_combine($views, $views);
+		$views = array_map(fn($view) => new View($this, $view), $views);
+		array_walk($views, fn($view) => $view->columns = $this->getColumns($view->name));
+		// array_walk($views, fn($view) => $view->primary_key = $this->getPrimaryKey($view->name));
+		$views = array_filter($views, fn($view) => $view->isValid());
 		return $views;
 	}
 	public function zzgetViews() {
@@ -119,11 +120,16 @@ class DatabaseSqlite extends Database {
 		return $views;
 	}
 	public function getPrimaryKey($table) {
-		$query = "PRAGMA table_info(`$table`)";
-		$result = $this->execute($query);
-		$pk = array_filter($result, function ($column) {
-			return $column['pk'] === 1;
-		});
+		if (is_string($table)) {
+			$query = "PRAGMA table_info(`$table`)";
+			$columns = $this->execute($query);
+		} else {
+			$columns = $table->columns;
+		}
+		$pk = array_filter($columns, fn($column) => $column['pk'] === 1);
+		if (empty($pk)) {
+			$pk = array_filter($columns, fn($column) => preg_match("~".self::$primary_key_pattern."~", $column['name']));
+		}
 		$pk = array_map(function ($column) {
 			return $column['name'];
 		}, $pk);
@@ -131,14 +137,13 @@ class DatabaseSqlite extends Database {
 		return $pk;
 	}
 	public function getColumns($table) {
-		$query = "PRAGMA table_info(`$table`)";
-		$result = $this->execute($query);
-		$columns = [];
-		$keys = array_flip(self::$excluded_analysis_keys);
-		foreach ($result as $column) {
-			$column = array_diff_key($column, $keys);
-			$columns[$column['name']] = $column;
+		if (!is_string($table)) {
+			$table = $table->name;
 		}
+		$query = "PRAGMA table_info(`{$table}`)";
+		$columns = $this->execute($query);
+		$names = array_map(fn($column) => $column['name'], $columns);
+		$columns = array_combine($names, $columns);
 		return $columns;
 	}
 	public function getIndexes($table) {

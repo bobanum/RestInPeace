@@ -42,9 +42,23 @@ class Config {
 		if ($checkTimeout && self::isTimedOut($filename)) return false;
 		return include $filepath;
 	}
+	static public function normalizeData($data) {
+		if (is_object($data)) {
+			$data = (array) $data;
+			// Remove private properties
+			$data = array_filter($data, fn ($key) => $key[0] !== "\0", ARRAY_FILTER_USE_KEY);
+		}
+		if (!is_array($data)) {
+			return $data;
+		}
+		$data = array_map(fn ($item) => self::normalizeData($item), $data);
+		
+		return $data;
+	}
 	public static function output($filename, $data) {
 		// $filename = sprintf("schema.%s.php", basename(Config::get('DB_DATABASE', 'schema')));
 		$filepath = self::path($filename);
+		$data = self::normalizeData($data);
 		$output = "\n" . var_export($data, true) . ";";
 		$output = preg_replace('~((?:\r\n|\n\r|\r|\n)\s*)array \(~', '[', $output);
 		$output = preg_replace('~((?:\r\n|\n\r|\r|\n)\s*)\)([\,\;])~', '$1]$2', $output);
