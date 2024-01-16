@@ -1,6 +1,6 @@
 {
   "name": "bobanum/restinpeace",
-  "description": "RESTful PHP API for SQLite, MySQL and PostgreSQL Databases",
+  "description": "Database-Driven REST API Module with HATEOAS Support",
   "require": {
     "php": ">=7.4.33",
     "doctrine/inflector": "^2.0",
@@ -10,6 +10,18 @@
     "psr-4": {
       "RestInPeace\\": "src/"
     }
+  },
+  "authors": [
+    {
+      "name": "Martin Boudreau",
+      "email": "bobanum@gmail.com"
+    }
+  ],
+  "homepage": "https://githhub.com/bobanum/RestInPeace",
+  "support": {
+    "email": "support.email@example.com",
+    "issues": "https://github.com/bobanum/RestInPeace/issues",
+    "source": "https://github.com/bobanum/RestInPeace"
   },
   "license": "MIT",
   "minimum-stability": "stable"
