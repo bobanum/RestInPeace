@@ -5,11 +5,12 @@ namespace RestInPeace;
 class TableOrView {
 	use HasAccessors;
 	use HasHateoas;
-	static $configKeys = ['name', 'columns', 'primary_key', 'foreign_keys', 'views'];
+	static $configKeys = ['name', 'columns', 'primary_key', 'views', 'relations', 'foreign_keys', ];
 	public $name;
 	public $columns = [];
 	public $indexes = [];
 	private $_primary_key = [];
+	public $relations = [];
 	public $foreign_keys = [];
 	private $schema = [];
 	private $database;
@@ -40,6 +41,11 @@ class TableOrView {
 			return !in_array($this->name, RestInPeace::$excluded_tables);
 		}
 		return false;
+	}
+	public function addRelation($table, $key) {
+		$relation = new Relation(Relation::BELONGS_TO, $table, $key);
+		$this->relations[$relation->name] = new Relation(Relation::BELONGS_TO, $table->name, $key);
+		$table->relations[$this->name] = new Relation(Relation::HAS_MANY, $this->name, $key);
 	}
 
 	static function isJunctionTable($table) {
@@ -117,9 +123,9 @@ class TableOrView {
 			return Response::replyCode(404);
 		}
 
-		if (empty($result)) {
-			return Response::replyCode(204);
-		}
+		// if (empty($result)) {
+		// 	return Response::replyCode(204);
+		// }
 		return $result;
 	}
 	function find($id, $suffix = "index") {
@@ -148,12 +154,48 @@ class TableOrView {
 		// }
 		return $result;
 	}
+	function related($related, $id, $suffix = "index") {
+		$schema = RestInPeace::getSchema();
+		if (!isset($this->relations[$related])) {
+			return Response::replyCode(404);
+		}
+		$relation = $this->relations[$related];
+		$related = $schema['tables'][$relation->table];
+		$realRelated = $related;
+		if (isset($related->views[$suffix])) {
+			$related = $related->views[$suffix];
+		}
+
+		$query = [];
+		if ($relation->type === Relation::BELONGS_TO) {
+			$query[] = sprintf('SELECT * FROM %1$s WHERE id = (SELECT %2$s FROM %3$s WHERE id = ?)', $related->name, $relation->foreign_key, $this->name);
+		} else if ($relation->type === Relation::HAS_MANY) {
+			$query = sprintf('SELECT * FROM `%1$s` WHERE `%2$s` = ?', $related->name, $relation->foreign_key);
+		}
+		$this->addParams($query);
+		$result = $this->database->execute($query, [$id]);
+
+		if ($result === false) {
+			return Response::replyCode(404);
+		}
+		// if (empty($result)) {
+		// 	return Response::replyCode(204);
+		// }
+		if ($relation->type === Relation::BELONGS_TO) {
+			$result = $result[0];
+			$realRelated->addHateoas($result);
+		} else {
+			$realRelated->addHateoasArray($result);
+		}
+		return $result;
+	}
+
 	static function from($config, $database = null) {
 		if ($config instanceof self) {
 			return $config;
 		}
-		$result = new self($database);
-		foreach (self::$configKeys as $key) {
+		$result = new static($database);
+		foreach (static::$configKeys as $key) {
 			if (isset($config[$key])) {
 				$result->$key = $config[$key];
 			}

@@ -4,7 +4,8 @@ namespace RestInPeace;
 
 abstract class Database {
 	use HasAccessors;
-	static private $primary_key_pattern = '^id$';	// A regex pattern to match primary keys
+	static protected $primary_key_pattern = '^id$';	// A regex pattern to match primary keys
+	static protected $foreign_key_pattern = '^([a-z0-9_]+)_id$';	// A regex pattern to match primary keys
 	private $_pdo;
 	private $statements = [];
 	public $schema = [];
@@ -65,15 +66,37 @@ abstract class Database {
 	public function analyse() {
 		$tables = $this->getTables();
 		$views = $this->getViews();
-		// $indexes = $this->getIndexes();
 		foreach ($tables as &$table) {
 			if (empty($views)) break;	// If we just removed the last view
 			$table->processSuffixedViews($views);
 		}
 		// Reanalyse to complete foreign keys and foreign tables
-		foreach ($tables as &$table) {
-			// $tableName = $table->name;
-			// vd($tableName);
+		foreach ($tables as $tableName=>$table) {
+			foreach ($table->foreign_keys as $fk) {
+				$foreignTable = $fk['table'];
+				$table->addRelation($tables[$foreignTable], $fk['from']);
+			}
+			// Check for unprocessed foreign keys
+			foreach ($table->columns as $columnName=>$column) {
+				preg_match("~".self::$foreign_key_pattern."~", $column['name'], $matches);
+				if (empty($matches)) continue;
+				$relationName = $matches[1];
+				if (isset($table->relations[$relationName])) continue;
+				$pattern = sprintf("~^%s([^_]*)$~", preg_quote($foreignTable));
+				$ft = array_filter(array_keys($tables), fn($name) => preg_match($pattern, $name));
+				if (count($ft) === 0) continue;
+				if (count($ft) > 1) {
+					// Keep the shortest one
+					$ft = array_reduce($ft, function ($carry, $item) {
+						if (empty($carry)) return $item;
+						if (strlen($item) < strlen($carry)) return $item;
+						return $carry;
+					});
+				} else {
+					$ft = array_pop($ft);
+				}
+				$table->addRelation($tables[$ft], $column['name']);
+			}
 		}
 		return [
 			"tables" => $tables,
@@ -85,6 +108,7 @@ abstract class Database {
 	abstract public function getColumns($table);
 	abstract public function getIndexes($table);
 	abstract public function getPrimaryKey($table);
+	abstract public function getForeignKeys($table);
 
 	public function prepare($query) {
 		$hash = crc32($query);

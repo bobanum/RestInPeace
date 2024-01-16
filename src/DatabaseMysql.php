@@ -41,4 +41,23 @@ class DatabaseMysql extends Database {
 			Config::get('DB_PORT', 3306)
 		);
 	}
+	public function getTables() {
+		return "TODO Implement getTables()";
+	}
+	public function getViews() {
+		return "TODO Implement getViews()";
+	}
+	public function getColumns($table) {
+		return "TODO Implement getColumns()";
+	}
+	public function getIndexes($table) {
+		return "TODO Implement getIndexes()";
+	}
+
+	public function getPrimaryKey($table) {
+		return "TODO Implement getPrimaryKey()";
+	}
+	public function getForeignKeys($table) {
+		return "TODO Implement getForeignKeys()";
+	}
 }

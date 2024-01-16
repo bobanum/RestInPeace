@@ -24,17 +24,16 @@ Router::group('/#slug', function ($table) {
 	}) ?:
 	
 	Router::group('/#num', function ($table, $id) {
-		$result = RIP::getOne($table, $id);
+		$result = RIP::getOne($table, $id)[0];
 		return Router::get('/', function ($table, $id) use ($result) {
 			return $result;
 		}) ?:
 		Router::get('/#slug', function ($table, $id, $slug) use ($result) {
-			$sub = RIP::getSome($slug, $id, $table);
-			// vd($result);
-			return $sub;
+			$sub = RIP::getRelated($table, $id, $slug);
+			$result[$slug] = $sub;
+			return $result;
 		});
 	});
-	
 }) ?:
 Response::replyCode(404);
 // Router::get('/#num/#alpha?', function ($id, $nom) {

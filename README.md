@@ -34,6 +34,9 @@ To create a suffixes view for a table, create a view with the same name as the t
 |excluded_tables|An array of __tables__ or __views__ will be excluded from the generated schema. Will be ignored if `include_tables` is set.|`[]`|
 |hidden_tables|An array of __tables__ or __views__ will be included in the schema but will be hidden from the entry points (router).|`[]`|
 |keep_all_views|Keep all views in the schema and entry points.|`false`|
+|primary_key_pattern|A regex pattern to match primary keys|`^id$`|
+|foreign_key_pattern|A regex pattern to match foreign keys|`^([a-0-9_]+)_id$`|
+
 
 ## Nomenclature
 

@@ -106,30 +106,22 @@ class RestInPeace {
 		self::connect();
 		$table = Table::from($schema['tables'][$table], self::$db);
 		$result = $table->find($id, $suffix);
-		// vdd($table);
 		////
 		// Adding HATEOAS
 		$table->addHateoasArray($result);
 
 		return $result;
 	}
-	static function getSome($table, $id, $foreign_table, $suffix = "index") {
+	static function getRelated($table, $id, $related) {
 		$schema = self::getSchema();
-		
 		if (!isset($schema['tables'][$table])) {
 			return Response::replyCode(404);
 		}
+		/** @var Table $table */
 		$table = $schema['tables'][$table];
-		return $table;
-		self::connect();
-		$table = Table::from($schema['tables'][$table], self::$db);
-		// vdd($table);
-		$result = $table->find($id, $suffix);
-		////
-		// Adding HATEOAS
-		// $table->addHateoasArray($result);
+		$data = $table->related($related, $id);
 
-		return $result;
+		return $data;
 	}
 	public static function analyseDb() {
 		return self::$db->analyse();
@@ -208,7 +200,6 @@ class RestInPeace {
 		}
 		$table = Table::from($table);
 		if (!empty(self::$hidden_tables) && in_array($table->name, self::$hidden_tables)) {
-			vdd($table);
 			return false;
 		}
 		if (!empty($table->is_junction_table)) {

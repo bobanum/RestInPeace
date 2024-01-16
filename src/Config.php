@@ -44,7 +44,11 @@ class Config {
 	}
 	static public function normalizeData($data) {
 		if (is_object($data)) {
-			$data = (array) $data;
+			if (method_exists($data, 'toConfig')) {
+				$data = $data->toConfig();
+			} else {
+				$data = (array) $data;
+			}
 			// Remove private properties
 			$data = array_filter($data, fn ($key) => $key[0] !== "\0", ARRAY_FILTER_USE_KEY);
 		}

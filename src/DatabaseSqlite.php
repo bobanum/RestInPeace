@@ -75,26 +75,18 @@ class DatabaseSqlite extends Database {
 		$tables = $this->execute($query);
 		$tables = array_map(fn($item) => $item['name'], $tables);
 		$tables = array_combine($tables, $tables);
-		$tables = array_map(fn($table) => new Table($this, $table), $tables);
-		array_walk($tables, fn($table) => $table->columns = $this->getColumns($table->name));
-		// array_walk($tables, fn($table) => $table->primary_key = $this->getPrimaryKey($table->name));
-		$tables = array_filter($tables, fn($table) => $table->isValid());
-		// vdd(array_map(fn($item) => $item->primary_key, $tables));
-		// $keys = array_flip(self::$excluded_analysis_keys);
-		// vdd($keys);
-		// foreach ($tables as $tableName) {
-			// $name = $table['name'];
-			
-			// $table = new Table($this, $tableName);
-			// $table['columns'] = $this->getColumns($name);
-			// $table['is_junction_table'] = Table::isJunctionTable($table);
-			// $table['indexes'] = $this->getIndexes($name);
-			// $table['primary_key'] = $this->getPrimaryKey($name);
-			// $tables[$name] = $table;
-		// }
-		// foreach ($tables as &$table) {
-		// 	$table['foreign_keys'] = $this->getForeignKeys($table['name']);
-		// }
+		// $tables = array_map(fn($table) => new Table($this, $table), $tables);
+		$tables = array_map(function ($tableName) {
+			$table = new Table($this, $tableName);
+			$table->columns = $this->getColumns($tableName);
+			$table->indexes = $this->getIndexes($tableName);
+			$table->primary_key = $this->getPrimaryKey($tableName);
+			$table->foreign_keys = $this->getForeignKeys($tableName);
+			if (!$table->isValid()) {
+				return false;
+			}
+			return $table;
+		}, $tables);
 		return $tables;
 	}
 	public function getViews() {
