@@ -2,9 +2,6 @@
 namespace RestInPeace;
 
 class Router {
-	public function __construct() {
-		echo "Hello World!";
-	}
 	static function group($path, $callback) {
 		$bak_parts = Request::$parts;
 		$bak_uri = Request::$uri;

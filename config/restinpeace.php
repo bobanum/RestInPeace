@@ -14,7 +14,7 @@ return [
 		'users' => ['password', 'remember_token', ],
 	],
 	
-	'keep_all_views' => false,
+	'hide_suffixed_views' => true,
 	'primary_key_pattern' => '^id$',	// A regex pattern to match primary keys
 	'foreign_key_pattern' => '^([a-0-9_]+)_id$',	// A regex pattern to match primary keys
 ];

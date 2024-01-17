@@ -20,7 +20,11 @@ class Request {
 	}
 	static function load() {
 		self::$method = self::getMethod();
-		self::$uri = preg_replace('~/+$~', '', $_SERVER['REQUEST_URI']); // remove trailing slash
+		$folder = substr($_SERVER['PHP_SELF'], 0, strrpos($_SERVER['PHP_SELF'], '/index.php'));
+		$uri = preg_replace('~/+$~', '', $_SERVER['REQUEST_URI']); // remove trailing slash
+		$uri = substr($uri, strlen($folder));
+		self::$uri = $uri;
+		return self::$uri;
 	}
 	static private function getMethod() {
 		if (array_key_exists('_method', $_GET)) {

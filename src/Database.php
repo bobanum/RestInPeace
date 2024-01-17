@@ -66,7 +66,7 @@ abstract class Database {
 	public function analyse() {
 		$tables = $this->getTables();
 		$views = $this->getViews();
-		foreach ($tables as &$table) {
+		foreach ($tables as $key=>&$table) {
 			if (empty($views)) break;	// If we just removed the last view
 			$table->processSuffixedViews($views);
 		}

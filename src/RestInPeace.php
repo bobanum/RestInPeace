@@ -6,6 +6,7 @@ class RestInPeace {
 	const SCHEMA_CACHE = 86400;
 	const CONFIG_PATH = ".";
 	public static $root = null;
+	private static $_schema = null;
 	protected static $app_root = null;
 	protected static $db = null;
 	public static $included_tables = [];
@@ -172,31 +173,28 @@ class RestInPeace {
 		return self::$db;
 	}
 	static public function getSchema() {
-		$filename = sprintf("schema.%s.php", basename(Config::get('DB_DATABASE', 'schema')));
-		$schema = config::load($filename, true);
-		if ($schema !== false) {
-			return $schema;
+		if (self::$_schema === null) {
+			$filename = sprintf("schema.%s.php", basename(Config::get('DB_DATABASE', 'schema')));
+			$schema = config::load($filename, true);
+			if ($schema === false) {
+				$schema = self::analyseDb();
+				$schema['updated_at'] = time();
+				Config::output($filename, $schema);
+			}
+			self::$_schema = $schema;
 		}
-		$schema = self::analyseDb();
-		$schema['updated_at'] = time();
-		Config::output($filename, $schema);
-		return $schema;
+		return self::$_schema;
 	}
-	static public function isValidTable($table) {
-		if (empty(self::$included_tables) && empty(self::$excluded_tables)) {
-			return true;
+	static public function getSchemaTable($table) {
+		$schema = self::getSchema();
+		if (!isset($schema['tables'][$table])) {
+			return false;
 		}
-		if (!empty(self::$included_tables)) {
-			return in_array($table, self::$included_tables);
-		}
-		if (!empty(self::$excluded_tables)) {
-			return !in_array($table, self::$excluded_tables);
-		}
-		return false;
+		return $schema;
 	}
 	static public function isVisible($table) {
 		if (is_string($table)) {
-			$table = self::getSchema()['tables'][$table];
+			$table = self::getSchemaTable($table);
 		}
 		$table = Table::from($table);
 		if (!empty(self::$hidden_tables) && in_array($table->name, self::$hidden_tables)) {

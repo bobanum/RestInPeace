@@ -64,7 +64,7 @@ class TableOrView {
 		$suffixes = array_filter($suffixes);
 		$table_views = array_flip($suffixes);
 		$table_views = array_map(fn ($viewName) => $views[$viewName], $table_views);
-		if (!Config::get('KEEP_ALL_VIEWS', false)) {
+		if (Config::get('HIDE_SUFFIXED_VIEWS', true)) {
 			$views = array_diff_key($views, $suffixes);
 		}
 		$this->views = $table_views;
@@ -106,7 +106,7 @@ class TableOrView {
 	function all($suffix = "index", $params = []) {
 		$query = [];
 		if (isset($this->views[$suffix])) {
-			$tableName = $this->views[$suffix]['name'];
+			$tableName = $this->views[$suffix]->name;
 		} else {
 			$tableName = $this->name;
 		}

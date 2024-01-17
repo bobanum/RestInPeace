@@ -1835,6 +1835,92 @@ return [
 		],
 	],
 	'views' => [
+		'schools__index' => [
+			'name' => 'schools__index',
+			'columns' => [
+				'id' => [
+					'cid' => 0,
+					'name' => 'id',
+					'type' => 'INTEGER',
+					'notnull' => 0,
+					'dflt_value' => NULL,
+					'pk' => 0,
+				],
+				'name' => [
+					'cid' => 1,
+					'name' => 'name',
+					'type' => 'varchar(255)',
+					'notnull' => 0,
+					'dflt_value' => NULL,
+					'pk' => 0,
+				],
+				'abbr' => [
+					'cid' => 2,
+					'name' => 'abbr',
+					'type' => 'varchar(255)',
+					'notnull' => 0,
+					'dflt_value' => NULL,
+					'pk' => 0,
+				],
+				'slug' => [
+					'cid' => 3,
+					'name' => 'slug',
+					'type' => 'varchar(255)',
+					'notnull' => 0,
+					'dflt_value' => NULL,
+					'pk' => 0,
+				],
+			],
+			'indexes' => [
+			],
+			'relations' => [
+			],
+			'foreign_keys' => [
+			],
+		],
+		'users__index' => [
+			'name' => 'users__index',
+			'columns' => [
+				'id' => [
+					'cid' => 0,
+					'name' => 'id',
+					'type' => 'INTEGER',
+					'notnull' => 0,
+					'dflt_value' => NULL,
+					'pk' => 0,
+				],
+				'name' => [
+					'cid' => 1,
+					'name' => 'name',
+					'type' => 'varchar(255)',
+					'notnull' => 0,
+					'dflt_value' => NULL,
+					'pk' => 0,
+				],
+				'email' => [
+					'cid' => 2,
+					'name' => 'email',
+					'type' => 'varchar(191)',
+					'notnull' => 0,
+					'dflt_value' => NULL,
+					'pk' => 0,
+				],
+				'role' => [
+					'cid' => 3,
+					'name' => 'role',
+					'type' => 'INT',
+					'notnull' => 0,
+					'dflt_value' => NULL,
+					'pk' => 0,
+				],
+			],
+			'indexes' => [
+			],
+			'relations' => [
+			],
+			'foreign_keys' => [
+			],
+		],
 	],
-	'updated_at' => 1705421242,
+	'updated_at' => 1705512496,
 ];

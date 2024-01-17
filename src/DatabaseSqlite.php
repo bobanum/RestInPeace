@@ -87,6 +87,7 @@ class DatabaseSqlite extends Database {
 			}
 			return $table;
 		}, $tables);
+		$tables = array_filter($tables);
 		return $tables;
 	}
 	public function getViews() {
