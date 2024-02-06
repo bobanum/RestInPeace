@@ -131,7 +131,7 @@ class TableOrView {
 	function find($id, $suffix = "index") {
 		$query = [];
 		if (isset($this->views[$suffix])) {
-			$tableName = $this->views[$suffix]['name'];
+			$tableName = $this->views[$suffix]->name;
 		} else {
 			$tableName = $this->name;
 		}
@@ -155,12 +155,11 @@ class TableOrView {
 		return $result;
 	}
 	function related($related, $id, $suffix = "index") {
-		$schema = RestInPeace::getSchema();
 		if (!isset($this->relations[$related])) {
 			return Response::replyCode(404);
 		}
 		$relation = $this->relations[$related];
-		$related = $schema['tables'][$relation->table];
+		$related = RestInPeace::getSchemaTable($relation->table);
 		$realRelated = $related;
 		if (isset($related->views[$suffix])) {
 			$related = $related->views[$suffix];

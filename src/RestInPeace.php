@@ -114,12 +114,14 @@ class RestInPeace {
 		return $result;
 	}
 	static function getRelated($table, $id, $related) {
-		$schema = self::getSchema();
-		if (!isset($schema['tables'][$table])) {
+		// $schema = self::getSchema();
+		$table = self::getSchemaTable($table);
+		// vdd($table);
+		if (!$table) {
 			return Response::replyCode(404);
 		}
 		/** @var Table $table */
-		$table = $schema['tables'][$table];
+		// $table = $table['tables'][$table];
 		$data = $table->related($related, $id);
 
 		return $data;
@@ -180,17 +182,27 @@ class RestInPeace {
 				$schema = self::analyseDb();
 				$schema['updated_at'] = time();
 				Config::output($filename, $schema);
+			} else {
+				$schema['tables'] = array_map(fn ($table) => Table::from($table, self::$db), $schema['tables'] ?? []);
+				$schema['views'] = array_map(fn ($view) => View::from($view, self::$db), $schema['views'] ?? []);
 			}
 			self::$_schema = $schema;
 		}
 		return self::$_schema;
+	}
+	static public function getSchemaView($view) {
+		$schema = self::getSchema();
+		if (!isset($schema['views'][$view])) {
+			return false;
+		}
+		return View::from($schema['views'][$view]);
 	}
 	static public function getSchemaTable($table) {
 		$schema = self::getSchema();
 		if (!isset($schema['tables'][$table])) {
 			return false;
 		}
-		return $schema;
+		return Table::from($schema['tables'][$table]);
 	}
 	static public function isVisible($table) {
 		if (is_string($table)) {

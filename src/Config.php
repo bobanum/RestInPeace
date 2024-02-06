@@ -22,7 +22,7 @@ class Config {
 		self::$attributes[$key] = $value;
 	}
 	static function init() {
-		$dotenv = Dotenv::createImmutable(dirname(__DIR__));
+		$dotenv = Dotenv::createImmutable(RIP::app_path());
 		$dotenv->load();
 		return;
 	}

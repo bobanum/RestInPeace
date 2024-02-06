@@ -25,4 +25,12 @@ class Relation {
 		$result['table'] = $this->table->name ?? $this->table;
 		return $result;
 	}
+	static function from($config) {
+		if ($config instanceof self) {
+			return $config;
+		}
+		$result = new self($config['type'], $config['table'], $config['foreign_key']);
+		$result->name = $config['name'];
+		return $result;
+	}
 }

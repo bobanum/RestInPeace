@@ -1,0 +1,290 @@
+<?php
+return [
+	'tables' => [
+		'produits' => [
+			'name' => 'produits',
+			'columns' => [
+				'id' => [
+					'cid' => 0,
+					'name' => 'id',
+					'type' => 'INTEGER',
+					'notnull' => 1,
+					'dflt_value' => NULL,
+					'pk' => 1,
+				],
+				'cup' => [
+					'cid' => 1,
+					'name' => 'cup',
+					'type' => 'varchar',
+					'notnull' => 1,
+					'dflt_value' => NULL,
+					'pk' => 0,
+				],
+				'titre' => [
+					'cid' => 2,
+					'name' => 'titre',
+					'type' => 'varchar',
+					'notnull' => 1,
+					'dflt_value' => NULL,
+					'pk' => 0,
+				],
+				'description' => [
+					'cid' => 3,
+					'name' => 'description',
+					'type' => 'TEXT',
+					'notnull' => 0,
+					'dflt_value' => NULL,
+					'pk' => 0,
+				],
+				'prix' => [
+					'cid' => 4,
+					'name' => 'prix',
+					'type' => 'float',
+					'notnull' => 1,
+					'dflt_value' => NULL,
+					'pk' => 0,
+				],
+				'created_at' => [
+					'cid' => 5,
+					'name' => 'created_at',
+					'type' => 'datetime',
+					'notnull' => 0,
+					'dflt_value' => NULL,
+					'pk' => 0,
+				],
+				'updated_at' => [
+					'cid' => 6,
+					'name' => 'updated_at',
+					'type' => 'datetime',
+					'notnull' => 0,
+					'dflt_value' => NULL,
+					'pk' => 0,
+				],
+				'user_id' => [
+					'cid' => 7,
+					'name' => 'user_id',
+					'type' => 'INTEGER',
+					'notnull' => 0,
+					'dflt_value' => NULL,
+					'pk' => 0,
+				],
+			],
+			'indexes' => [
+				'produits_cup_unique' => [
+					'seq' => 0,
+					'name' => 'produits_cup_unique',
+					'unique' => 1,
+					'origin' => 'c',
+					'partial' => 0,
+				],
+			],
+			'relations' => [
+				'user' => [
+					'name' => 'user',
+					'table' => 'produits',
+					'type' => 1,
+					'foreign_key' => 'user_id',
+				],
+				'produits' => [
+					'name' => 'produits',
+					'table' => 'produits',
+					'type' => 2,
+					'foreign_key' => 'user_id',
+				],
+			],
+			'foreign_keys' => [
+				'user_id' => [
+					'id' => 0,
+					'seq' => 0,
+					'table' => 'users',
+					'from' => 'user_id',
+					'to' => 'id',
+					'on_update' => 'NO ACTION',
+					'on_delete' => 'NO ACTION',
+					'match' => 'NONE',
+				],
+			],
+			'views' => [
+				'index' => [
+					'name' => 'produits__index',
+					'columns' => [
+						'id' => [
+							'cid' => 0,
+							'name' => 'id',
+							'type' => 'INTEGER',
+							'notnull' => 0,
+							'dflt_value' => NULL,
+							'pk' => 0,
+						],
+						'cup' => [
+							'cid' => 1,
+							'name' => 'cup',
+							'type' => 'varchar',
+							'notnull' => 0,
+							'dflt_value' => NULL,
+							'pk' => 0,
+						],
+						'titre' => [
+							'cid' => 2,
+							'name' => 'titre',
+							'type' => 'varchar',
+							'notnull' => 0,
+							'dflt_value' => NULL,
+							'pk' => 0,
+						],
+					],
+					'indexes' => [
+					],
+					'relations' => [
+					],
+					'foreign_keys' => [
+					],
+				],
+			],
+		],
+		'users' => [
+			'name' => 'produits',
+			'columns' => [
+				'id' => [
+					'cid' => 0,
+					'name' => 'id',
+					'type' => 'INTEGER',
+					'notnull' => 1,
+					'dflt_value' => NULL,
+					'pk' => 1,
+				],
+				'cup' => [
+					'cid' => 1,
+					'name' => 'cup',
+					'type' => 'varchar',
+					'notnull' => 1,
+					'dflt_value' => NULL,
+					'pk' => 0,
+				],
+				'titre' => [
+					'cid' => 2,
+					'name' => 'titre',
+					'type' => 'varchar',
+					'notnull' => 1,
+					'dflt_value' => NULL,
+					'pk' => 0,
+				],
+				'description' => [
+					'cid' => 3,
+					'name' => 'description',
+					'type' => 'TEXT',
+					'notnull' => 0,
+					'dflt_value' => NULL,
+					'pk' => 0,
+				],
+				'prix' => [
+					'cid' => 4,
+					'name' => 'prix',
+					'type' => 'float',
+					'notnull' => 1,
+					'dflt_value' => NULL,
+					'pk' => 0,
+				],
+				'created_at' => [
+					'cid' => 5,
+					'name' => 'created_at',
+					'type' => 'datetime',
+					'notnull' => 0,
+					'dflt_value' => NULL,
+					'pk' => 0,
+				],
+				'updated_at' => [
+					'cid' => 6,
+					'name' => 'updated_at',
+					'type' => 'datetime',
+					'notnull' => 0,
+					'dflt_value' => NULL,
+					'pk' => 0,
+				],
+				'user_id' => [
+					'cid' => 7,
+					'name' => 'user_id',
+					'type' => 'INTEGER',
+					'notnull' => 0,
+					'dflt_value' => NULL,
+					'pk' => 0,
+				],
+			],
+			'indexes' => [
+				'produits_cup_unique' => [
+					'seq' => 0,
+					'name' => 'produits_cup_unique',
+					'unique' => 1,
+					'origin' => 'c',
+					'partial' => 0,
+				],
+			],
+			'relations' => [
+				'user' => [
+					'name' => 'user',
+					'table' => 'produits',
+					'type' => 1,
+					'foreign_key' => 'user_id',
+				],
+				'produits' => [
+					'name' => 'produits',
+					'table' => 'produits',
+					'type' => 2,
+					'foreign_key' => 'user_id',
+				],
+			],
+			'foreign_keys' => [
+				'user_id' => [
+					'id' => 0,
+					'seq' => 0,
+					'table' => 'users',
+					'from' => 'user_id',
+					'to' => 'id',
+					'on_update' => 'NO ACTION',
+					'on_delete' => 'NO ACTION',
+					'match' => 'NONE',
+				],
+			],
+			'views' => [
+				'index' => [
+					'name' => 'produits__index',
+					'columns' => [
+						'id' => [
+							'cid' => 0,
+							'name' => 'id',
+							'type' => 'INTEGER',
+							'notnull' => 0,
+							'dflt_value' => NULL,
+							'pk' => 0,
+						],
+						'cup' => [
+							'cid' => 1,
+							'name' => 'cup',
+							'type' => 'varchar',
+							'notnull' => 0,
+							'dflt_value' => NULL,
+							'pk' => 0,
+						],
+						'titre' => [
+							'cid' => 2,
+							'name' => 'titre',
+							'type' => 'varchar',
+							'notnull' => 0,
+							'dflt_value' => NULL,
+							'pk' => 0,
+						],
+					],
+					'indexes' => [
+					],
+					'relations' => [
+					],
+					'foreign_keys' => [
+					],
+				],
+			],
+		],
+	],
+	'views' => [
+	],
+	'updated_at' => 1705867816,
+];

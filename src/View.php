@@ -18,4 +18,12 @@ class View extends TableOrView {
 		}
 		return false;
 	}
+	static function from($config, $database = null) {
+		if ($config instanceof self) {
+			return $config;
+		}
+		$result = parent::from($config, $database);
+		
+		return $result;
+	}
 }
