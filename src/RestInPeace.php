@@ -23,6 +23,14 @@ class RestInPeace {
 			if (file_exists($temp)) {
 				self::$app_root = $temp;
 			}
+			// Trying to find the .env file
+			$temp = self::$app_root;
+			while (file_exists($temp) && !file_exists("{$temp}/.env")) {
+				$temp = dirname($temp);
+			}
+			if (file_exists("{$temp}/.env")) {
+				self::$app_root = $temp;
+			}
 		}
 		if (empty($path)) {
 			return self::$app_root;
