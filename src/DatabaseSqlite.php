@@ -3,15 +3,34 @@
 namespace RestInPeace;
 
 class DatabaseSqlite extends Database {
+	/** @var string $database The path to the SQLite database file */
 	public $database;
+	/** @var string $username The username for the database connection */
 	public $username;
+	/** @var string $password The password for the database connection */
 	public $password;
+	/** @var string $host The hostname for the SQLite database connection */
 	public $host;
+	/** @var int|null The port number for the SQLite database connection. */
 	public $port;
+	/** @var array $excluded_analysis_keys List of keys to be excluded from analysis */
 	static public $excluded_analysis_keys = ['rootpage', 'sql', 'tbl_name', 'type'];
+	/**
+	 * Constructor for the DatabaseSqlite class.
+	 *
+	 * Initializes a new instance of the DatabaseSqlite class with the specified database file.
+	 *
+	 * @param string $database The name of the SQLite database file. Default is 'db.sqlite'.
+	 */
 	public function __construct($database = 'db.sqlite') {
 		$this->database = RestInPeace::database_path($database);
 	}
+	/**
+	 * Creates a new PDO instance with the given options.
+	 *
+	 * @param array $options An array of options to configure the PDO instance.
+	 * @return \PDO The newly created PDO instance.
+	 */
 	function newPDO($options = []) {
 		$options = self::$connectionOptions + [
 			\PDO::ATTR_TIMEOUT => 3,
@@ -67,6 +86,13 @@ class DatabaseSqlite extends Database {
 		}
 		return $pdo;
 	}
+	/**
+	 * Creates a new instance of the class from a configuration.
+	 *
+	 * This static method initializes the class using configuration settings.
+	 *
+	 * @return self Returns an instance of the class.
+	 */
 	static function fromConfig() {
 		return new static(Config::get('DB_DATABASE', 'db.sqlite'));
 	}
@@ -81,7 +107,6 @@ class DatabaseSqlite extends Database {
 		$tableNames = array_map(fn($item) => $item['name'], $tableSchemas);
 		$tables = array_map(function ($tableName) {
 			$table = new Table($this, $tableName);
-			// $table->getColumns($this);
 			$table->columns = $this->getColumns($tableName);
 			$table->indexes = $this->getIndexes($tableName);
 			$table->primary_key = $this->getPrimaryKey($tableName);
@@ -95,14 +120,23 @@ class DatabaseSqlite extends Database {
 		$tables = array_filter($tables);
 		return $tables;
 	}
+	/**
+	 * Retrieves a list of views from the SQLite database.
+	 *
+	 * @return View[] An array containing the names of the views in the database.
+	 */
 	public function getViews() {
+		//NOT TESTED RECENTLY
 		$query = "SELECT name FROM sqlite_master WHERE type = 'view' ORDER BY name";
-		$views = $this->execute($query);
-		$views = array_map(fn($item) => $item['name'], $views);
-		$views = array_combine($views, $views);
-		$views = array_map(fn($view) => new View($this, $view), $views);
-		array_walk($views, fn($view) => $view->columns = $this->getColumns($view->name));
-		// array_walk($views, fn($view) => $view->primary_key = $this->getPrimaryKey($view->name));
+		$viewSchemas = $this->execute($query);
+		$viewNames = array_map(fn($schema) => $schema['name'], $viewSchemas);
+		$views = array_map(function($viewName) {
+			$view = new View($this, $viewName);
+			$view->columns = $this->getColumns($view->name);
+			// $view->primary_key = $this->getPrimaryKey($view->name);
+		}, $viewNames);
+	
+		$views = array_combine($viewNames, $views);
 		$views = array_filter($views, fn($view) => $view->isValid());
 		return $views;
 	}
@@ -117,10 +151,15 @@ class DatabaseSqlite extends Database {
 		}
 		return $views;
 	}
+	/**
+	 * Retrieves the primary key of a specified table.
+	 *
+	 * @param string $table The name of the table to get the primary key from.
+	 * @return string|null The primary key of the table, or null if not found.
+	 */
 	public function getPrimaryKey($table) {
 		if (is_string($table)) {
-			$query = "PRAGMA table_info(`$table`)";
-			$columns = $this->execute($query);
+			$columns = $this->execute("PRAGMA table_info(`$table`)");
 		} else {
 			$columns = $table->columns;
 		}
@@ -134,6 +173,12 @@ class DatabaseSqlite extends Database {
 		
 		return $pk;
 	}
+	/**
+	 * Retrieves the columns of a specified table.
+	 *
+	 * @param string $table The name of the table to retrieve columns from.
+	 * @return array An array of column names.
+	 */
 	public function getColumns($table) {
 		if (!is_string($table)) {
 			$table = $table->name;
@@ -144,6 +189,12 @@ class DatabaseSqlite extends Database {
 		$columns = array_combine($names, $columns);
 		return $columns;
 	}
+	/**
+	 * Retrieves the indexes for a specified table in the SQLite database.
+	 *
+	 * @param string $table The name of the table to retrieve indexes for.
+	 * @return array An array of indexes for the specified table.
+	 */
 	public function getIndexes($table) {
 		$query = "PRAGMA index_list(`$table`)";
 		$result = $this->execute($query);
@@ -155,6 +206,12 @@ class DatabaseSqlite extends Database {
 		}
 		return $indexes;
 	}
+	/**
+	 * Retrieves the foreign keys for a specified table.
+	 *
+	 * @param string $table The name of the table to retrieve foreign keys from.
+	 * @return array An array of foreign key information.
+	 */
 	public function getForeignKeys($table) {
 		$query = "PRAGMA foreign_key_list(`$table`)";
 		$result = $this->execute($query);

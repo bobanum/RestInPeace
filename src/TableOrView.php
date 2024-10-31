@@ -20,22 +20,22 @@ class TableOrView {
 	/** @var array $indexes Array to store index definitions */
 	public $indexes = [];
 	/** @var array $_primary_key Array to store primary key(s) */
-	private $_primary_key = [];
+	protected $_primary_key = [];
 	/** @var array $relations Array to store relationships for the table or view */
 	public $relations = [];
 	/** @var array $foreign_keys An array to store foreign key relationships */
 	public $foreign_keys = [];
 	/** @var array $schema An array to store the schema information */
-	private $schema = [];
-	/** @var mixed $database The database connection or instance */
-	private $database;
+	protected $schema = [];
+	/** @var Database $database The database connection or instance */
+	protected $database;
 	/**
 	 * Constructor for the TableOrView class.
 	 *
 	 * @param Database $database The database connection or instance.
 	 * @param string|null $name The name of the table or view. Default is null.
 	 */
-	function __construct($database, $name = null) {
+	function __construct(Database $database, $name = null) {
 		$this->database = $database;
 		$this->name = $name;
 	}

@@ -1,6 +1,6 @@
 <?php
 namespace RestInPeace;
-
+//REVISE
 class View extends TableOrView {
 	public function get_table_name() {
 		if (empty($this->table_name)) {

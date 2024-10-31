@@ -14,12 +14,11 @@ abstract class Database {
 	private $statements = [];
 	/** @var array $schema An array to store the database schema */
 	public $schema = [];
-	/** @var array|null $tables Stores the database tables information */
-	private $tables = null;
-	public $views = null;
-	public function __construct() {
-		$this->_pdo = $this->newPDO();
-	}
+	/** @var Tables[] $tables Stores the database tables information */
+	private $tables = [];
+	/** @var View[] $views An array to store view data */
+	public $views = [];
+	/** @var array $connectionOptions Options for database connection */
 	public static $connectionOptions = [
 		\PDO::ATTR_CASE => \PDO::CASE_NATURAL,
 		\PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
@@ -28,13 +27,42 @@ abstract class Database {
 		\PDO::ATTR_ORACLE_NULLS => \PDO::NULL_NATURAL,
 		\PDO::ATTR_STRINGIFY_FETCHES => false,
 	];
+	/**
+	 * Constructor for the Database class.
+	 * 
+	 * Initializes a new instance of the Database class.
+	 */
+	public function __construct() {
+		$this->_pdo = $this->newPDO();
+	}
+	/**
+	 * Establishes and returns a PDO (PHP Data Objects) connection.
+	 *
+	 * @return PDO The PDO instance representing the database connection.
+	 */
 	function get_pdo() {
 		if (!empty($this->_pdo)) {
 			return $this->_pdo;
 		}
 		return $this->_pdo = $this->newPDO();
 	}
+	/**
+	 * Abstract method to create a new PDO instance.
+	 *
+	 * @param array $options Optional parameters for the PDO instance.
+	 * @return PDO
+	 */
 	abstract function newPDO($options = []);
+	/**
+	 * Normalize the given SQL query.
+	 *
+	 * This method takes a raw SQL query and normalizes it to ensure it adheres to
+	 * the expected format or standards. This can include tasks such as trimming
+	 * whitespace, converting keywords to uppercase, or other formatting adjustments.
+	 *
+	 * @param string[]|string $query The raw SQL query to be normalized.
+	 * @return string The normalized SQL query.
+	 */
 	public function normalizeQuery($query) {
 		if (is_string($query)) return $query;
 		$query = array_map(function ($key, $item) {
@@ -51,6 +79,13 @@ abstract class Database {
 		}, array_keys($query), $query);
 		return implode(' ', $query);
 	}
+	/**
+	 * Normalize the given where clause.
+	 *
+	 * @param mixed $where The where clause to normalize. This can be an array, string, or other type.
+	 * @param int $op Optional. The operation type. Default is 0.
+	 * @return mixed The normalized where clause.
+	 */
 	static public function normalizeWhere($where, $op = 0) {
 		if (is_string($where)) return $where;
 		
@@ -62,6 +97,13 @@ abstract class Database {
 		}, $where);
 		return sprintf("(%s)", implode($ops[$op], $where));
 	}
+	/**
+	 * Finds the suffix for a given view name and optionally a table name.
+	 *
+	 * @param string $viewName The name of the view to find the suffix for.
+	 * @param string $tableName Optional. The name of the table to find the suffix for. Default is an empty string.
+	 * @return mixed The suffix for the given view and table name.
+	 */
 	static public function findSuffixe($viewName, $tableName = '') {
 		$regex = sprintf("~^%s__([a-z]+)$~", $tableName);
 		if (preg_match($regex, $viewName, $matches)) {
@@ -69,15 +111,25 @@ abstract class Database {
 		}
 		return false;
 	}
+	/**
+	 * Analyzes the current state of the database.
+	 *
+	 * This method performs an analysis on the database to gather
+	 * information about its structure, contents, and other relevant
+	 * metrics. The specific details of what is analyzed and how the
+	 * results are presented depend on the implementation.
+	 *
+	 * @return array An array containing the results of the analysis.
+	 */
 	public function analyse() {
 		$tables = $this->getTables();
 		$views = $this->getViews();
-		foreach ($tables as $key=>$table) {
+		foreach ($tables as $table) {
 			if (empty($views)) break;	// If we just removed the last view
 			$table->processSuffixedViews($views);
 		}
 		// Reanalyse to complete foreign keys and foreign tables
-		foreach ($tables as $tableName=>$table) {
+		foreach ($tables as $table) {
 			foreach ($table->foreign_keys as $fk) {
 				$foreignTable = $fk['table'];
 				$table->addRelation($tables[$foreignTable], $fk['from']);
@@ -116,6 +168,12 @@ abstract class Database {
 	abstract public function getPrimaryKey($table);
 	abstract public function getForeignKeys($table);
 
+	/**
+	 * Prepares an SQL statement for execution.
+	 *
+	 * @param string $query The SQL query to be prepared.
+	 * @return \PDOStatement The prepared statement object.
+	 */
 	public function prepare($query) {
 		$hash = crc32($query);
 		if (empty($this->statements[$hash])) {
@@ -123,6 +181,13 @@ abstract class Database {
 		}
 		return $this->statements[$hash];
 	}
+	/**
+	 * Executes a given SQL query with the provided data.
+	 *
+	 * @param string $query The SQL query to be executed.
+	 * @param array $data The data to be bound to the query parameters.
+	 * @return mixed The result of the executed query.
+	 */
 	public function execute($query, ...$data) {
 		$query = $this->normalizeQuery($query);
 		try {
@@ -156,7 +221,13 @@ abstract class Database {
 			return false;
 		}
 	}
-	public static function fetch($stmt) {
+	/**
+	 * Fetches the result from a given statement.
+	 *
+	 * @param \PDOStatement $stmt The prepared statement to fetch the result from.
+	 * @return mixed The fetched result, typically an array or false if no result.
+	 */
+	public static function fetch(\PDOStatement $stmt) {
 		$result = $stmt->fetchAll();
 		if (count($result) === 0) {
 			return $result;

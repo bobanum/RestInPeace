@@ -1,9 +1,24 @@
 <?php
 namespace RestInPeace;
 
+/**
+ * Class Table
+ * 
+ * This class extends the TableOrView class and represents a table in the database.
+ * 
+ * @package bobanum\restinpeace
+ */
 class Table extends TableOrView {
+	/** @var array $views An array to store view data */
 	public $views = [];
 
+	/**
+	 * Creates a new instance of the Table class from the given configuration.
+	 *
+	 * @param array|string $config The configuration array or a string representing the table name.
+	 * @param string|null $database Optional. The name of the database. If not provided, the default database will be used.
+	 * @return Table The instance of the Table class.
+	 */
 	static function from($config, $database = null) {
 		if ($config instanceof self) {
 			return $config;
@@ -17,15 +32,5 @@ class Table extends TableOrView {
 			$result->relations[$name] = Relation::from($relation);
 		}
 		return $result;
-	}
-	public function getColumns(Database $db) {
-		// if (!is_string($table)) {
-		// 	$table = $table->name;
-		// }
-		$query = sprintf("PRAGMA table_info(`%s`)", $this->name);
-		$columns = $db->execute($query);
-		$names = array_map(fn($column) => $column['name'], $columns);
-		$columns = array_combine($names, $columns);
-		return $columns;
 	}
 }
