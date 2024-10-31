@@ -70,14 +70,18 @@ class DatabaseSqlite extends Database {
 	static function fromConfig() {
 		return new static(Config::get('DB_DATABASE', 'db.sqlite'));
 	}
+	/**
+	 * Retrieves a list of all tables in the SQLite database.
+	 *
+	 * @return Table[] An array of Table objects
+	 */
 	public function getTables() {
 		$query = "SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name";
-		$tables = $this->execute($query);
-		$tables = array_map(fn($item) => $item['name'], $tables);
-		$tables = array_combine($tables, $tables);
-		// $tables = array_map(fn($table) => new Table($this, $table), $tables);
+		$tableSchemas = $this->execute($query);
+		$tableNames = array_map(fn($item) => $item['name'], $tableSchemas);
 		$tables = array_map(function ($tableName) {
 			$table = new Table($this, $tableName);
+			// $table->getColumns($this);
 			$table->columns = $this->getColumns($tableName);
 			$table->indexes = $this->getIndexes($tableName);
 			$table->primary_key = $this->getPrimaryKey($tableName);
@@ -86,7 +90,8 @@ class DatabaseSqlite extends Database {
 				return false;
 			}
 			return $table;
-		}, $tables);
+		}, $tableNames);
+		$tables = array_combine($tableNames, $tables);
 		$tables = array_filter($tables);
 		return $tables;
 	}

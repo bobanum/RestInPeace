@@ -1,5 +1,4 @@
 <?php
-
 namespace RestInPeace;
 
 /**
@@ -28,12 +27,23 @@ trait HasHateoas {
     /**
      * Get the full URL for the specified parts.
      *
-     * @param mixed ...$parts The parts to append to the URL.
+     * @param string[] ...$parts The parts to append to the URL.
      * @return string The constructed URL.
      */
     public function getUrl(...$parts) {
+        return $this->getUrlFor($this->name, ...$parts);
+    }
+
+    /**
+     * Generates a URL for the given resource.
+     *
+     * @param string $for The resource for which the URL is being generated.
+     * @param string[] ...$parts Additional parts to be included in the URL.
+     * @return string The generated URL.
+     */
+    public function getUrlFor($for, ...$parts) {
         $root = $this->getRoot();
-        array_unshift($parts, $root, $this->name);
+        array_unshift($parts, $root, $for);
         $url = implode("/", $parts);
         return $url;
     }
@@ -73,10 +83,22 @@ trait HasHateoas {
     /**
      * Add HATEOAS links to a piece of data.
      *
-     * @param mixed $data The data to add links to.
+     * @param array $data The data to add links to.
      */
     public function addHateoas(&$data) {
-        $data['url'] = $this->getUrl($data['id']); // TODO: use the right PK
+        $id = $data['id'] ?? $this->id ?? null;
+        $data['url'] = $this->getUrl($id); // TODO: use the right PK
+    }
+    /**
+     * Adds related HATEOAS (Hypermedia as the Engine of Application State) links to the provided data.
+     *
+     * @param object $relation The name of the relation to add HATEOAS links for.
+     * @param array &$data The data to which the HATEOAS links will be added. This parameter is passed by reference.
+     * @return void
+     */
+    public function addRelatedHateoas($relation, &$data) {
+        $id = $data['id'] ?? $this->id ?? null;
+        $data['url'] = $this->getUrlFor($relation->foreign_table, $id); // TODO: use the right PK
     }
 
     /**

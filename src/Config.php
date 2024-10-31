@@ -69,8 +69,15 @@ class Config {
 		$output = str_replace('  ', "\t", $output);
 		$output = trim($output);
 		$output = "<?php\nreturn " . $output;
+		self::mkdir(dirname($filepath));
 		file_put_contents($filepath, $output);
 		return $data;
+	}
+	public static function mkdir($path, $mode = 0777) {
+		if (!file_exists($path)) {
+			mkdir($path, $mode, true);
+		}
+		return $path;
 	}
 	public static function getParams() {
 		$query = [];

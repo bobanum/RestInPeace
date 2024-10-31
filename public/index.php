@@ -48,7 +48,7 @@ function vdj() {
 	die;
 }
 
-RestInPeace::guard();
+// RestInPeace::guard();
 
 include "../routes.php";
 

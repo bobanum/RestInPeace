@@ -1,7 +1,8 @@
 <?php
-
 namespace RestInPeace;
-
+/**
+ * Represents the RestInPeace class.
+ */
 class RestInPeace {
 	const SCHEMA_CACHE = 86400;
 	const CONFIG_PATH = ".";
@@ -15,6 +16,13 @@ class RestInPeace {
 
 	static public function guard() {
 	}
+
+	/**
+	 * Returns the absolute path to the application directory.
+	 *
+	 * @param string $path Optional path to append to the application directory.
+	 * @return string The absolute path to the application directory.
+	 */
 	static public function app_path($path = "") {
 		if (self::$app_root === null) {
 			self::$app_root = Config::get('APP_PATH', dirname($_SERVER['DOCUMENT_ROOT']));
@@ -25,24 +33,48 @@ class RestInPeace {
 			}
 			// Trying to find the .env file
 			$temp = self::$app_root;
-			while (file_exists($temp) && !file_exists("{$temp}/.env")) {
+			while (file_exists($temp) && !file_exists("{$temp}/.env") && $temp !== dirname($temp)) {
 				$temp = dirname($temp);
 			}
-			if (file_exists("{$temp}/.env")) {
-				self::$app_root = $temp;
+			// 503 error
+			if (!file_exists("{$temp}/.env")) {
+				exit(Response::replyCode(503));
 			}
+			self::$app_root = $temp;
 		}
 		if (empty($path)) {
 			return self::$app_root;
 		}
 		return self::$app_root . "/" . $path;
 	}
+
+	/**
+	 * Returns the absolute path for the given database path.
+	 *
+	 * @param string $path The path to append to the database path.
+	 * @return string The absolute path.
+	 */
 	static public function database_path($path = '') {
 		return self::absolutePath(Config::get('DATABASE_PATH', 'database'), $path);
 	}
+
+	/**
+	 * Returns the absolute path for the given config path.
+	 *
+	 * @param string $path The path to append to the config path.
+	 * @return string The absolute path.
+	 */
 	static public function config_path($path = '') {
 		return self::absolutePath(Config::get('CONFIG_PATH', 'config'), $path);
 	}
+
+	/**
+	 * Returns the absolute path for the given path and file.
+	 *
+	 * @param string $path The base path.
+	 * @param string $file The file to append to the path.
+	 * @return string The absolute path.
+	 */
 	static public function absolutePath($path, $file = "") {
 		$result = self::app_path($path);
 		if (!file_exists($result)) {
@@ -54,6 +86,13 @@ class RestInPeace {
 		}
 		return $result;
 	}
+
+	/**
+	 * Retrieves the columns of the RestInPeace class.
+	 *
+	 * @param bool $implode Whether to implode the columns into a string or not. Default is true.
+	 * @return array|string The columns of the RestInPeace class. If $implode is true, the columns will be returned as a string.
+	 */
 	public static function getCols($implode = true) {
 		if (!isset($_GET['cols'])) {
 			return "*";
@@ -68,6 +107,16 @@ class RestInPeace {
 		}
 		return $cols;
 	}
+
+	/**
+	 * Adds parameters to the query array.
+	 *
+	 * This function allows you to add parameters to the query array by passing a reference to the array and the source of the parameters.
+	 *
+	 * @param array $query The query array to which the parameters will be added.
+	 * @param mixed $source The source of the parameters. This can be an array, an object, or null.
+	 * @return void
+	 */
 	static function addParams(&$query = [], $source = null) {
 		$source = $source ?? $_GET;
 		if (isset($source['by'])) {
@@ -87,7 +136,15 @@ class RestInPeace {
 		}
 		return $query;
 	}
-	static function getAll($table, $suffix = "index") {
+
+	/**
+	 * Retrieves all records from the specified table.
+	 *
+	 * @param string $table The name of the table to retrieve records from.
+	 * @param string $suffix The suffix to append to the method name for generating the route.
+	 * @return array An array containing all the records from the specified table.
+	 */
+	static function getAll(string $table = '', string $suffix = "index") {
 		$schema = self::getSchema();
 		if (!isset($schema['tables'][$table])) {
 			return Response::replyCode(404);
@@ -106,6 +163,15 @@ class RestInPeace {
 		];
 		return $result;
 	}
+	
+	/**
+	 * Retrieves a single record from the specified table based on the given ID.
+	 *
+	 * @param string $table The name of the table.
+	 * @param int $id The ID of the record to retrieve.
+	 * @param string $suffix The suffix to append to the find operation (default: "index").
+	 * @return mixed The retrieved record, or a 404 response if the table does not exist.
+	 */
 	static function getOne($table, $id, $suffix = "index") {
 		$schema = self::getSchema();
 		
@@ -115,28 +181,73 @@ class RestInPeace {
 		self::connect();
 		$table = Table::from($schema['tables'][$table], self::$db);
 		$result = $table->find($id, $suffix);
-		////
+		
 		// Adding HATEOAS
 		$table->addHateoasArray($result);
-
+		
 		return $result;
 	}
+
+	/**
+	 * Retrieves a single record from the specified table based on the given ID.
+	 *
+	 * @param string $table The name of the table.
+	 * @param int $id The ID of the record to retrieve.
+	 * @param string $suffix The suffix to append to the find operation (default: "index").
+	 * @return mixed The retrieved record, or a 404 response if the table does not exist.
+	 */
+	static function getOneGreedy($tableName, $id, $suffix = "index") {
+		$schema = self::getSchema();
+		
+		if (!isset($schema['tables'][$tableName])) {
+			return Response::replyCode(404);
+		}
+		self::connect();
+		$table = Table::from($schema['tables'][$tableName], self::$db);
+		$model = new Model($table, $id);
+		$model->fetch();
+		$model->fetchRelated();
+		$result = $model->attributes;
+		
+		// Adding HATEOAS
+		// $table->addHateoas($result);
+		
+		return $result;
+	}
+
+	/**
+	 * Retrieves related data from the specified table based on the given ID and relationship.
+	 *
+	 * @param string $table The name of the table.
+	 * @param int $id The ID of the record.
+	 * @param string $related The relationship to retrieve data from.
+	 * @return mixed The related data, or a 404 response if the table does not exist.
+	 */
 	static function getRelated($table, $id, $related) {
-		// $schema = self::getSchema();
 		$table = self::getSchemaTable($table);
-		// vdd($table);
 		if (!$table) {
 			return Response::replyCode(404);
 		}
-		/** @var Table $table */
-		// $table = $table['tables'][$table];
-		$data = $table->related($related, $id);
-
-		return $data;
+		return $table->related($related, $id);
 	}
+
+	/**
+	 * Analyzes the database and returns the analysis result.
+	 *
+	 * @return mixed The analysis result.
+	 */
 	public static function analyseDb() {
 		return self::$db->analyse();
 	}
+	
+	/**
+	 * Checks the clients.
+	 *
+	 * This method is responsible for checking the clients.
+	 * It performs some specific actions related to the clients.
+	 * 
+	 * @return void
+	 */
 	protected static function checkClients() {
 		$clients = Config::get('CLIENTS', '');
 
@@ -145,6 +256,13 @@ class RestInPeace {
 		}
 		return true;
 	}
+
+	/**
+	 * Checks if the given clients are allowed.
+	 *
+	 * @param array $clients The clients to check.
+	 * @return bool Returns true if the clients are allowed, false otherwise.
+	 */
 	protected static function isAllowed($clients) {
 		if (is_string($clients)) {
 			$clients = preg_split('~\s*,\s*~', $clients, -1, PREG_SPLIT_NO_EMPTY);
@@ -155,6 +273,12 @@ class RestInPeace {
 			!in_array($_SERVER['HTTP_REFERER'], (array) $clients)
 		);
 	}
+	
+	/**
+	 * Retrieves the path information for the current request.
+	 *
+	 * @return string The path information.
+	 */
 	protected static function getPathInfo() {
 		if (isset($_SERVER['PATH_INFO'])) {
 			return $_SERVER['PATH_INFO'];
@@ -164,6 +288,12 @@ class RestInPeace {
 		}
 		return preg_replace('~/++~', '/', substr($_SERVER['PHP_SELF'], strlen($_SERVER['SCRIPT_NAME'])) . '/');
 	}
+	
+	/**
+	 * Connects to the database.
+	 *
+	 * @return void
+	 */
 	protected static function connect() {
 		if (!empty(self::$db)) {
 			return self::$db;
@@ -182,6 +312,12 @@ class RestInPeace {
 		}
 		return self::$db;
 	}
+	
+	/**
+	 * Retrieves the schema.
+	 *
+	 * @return mixed The schema.
+	 */
 	static public function getSchema() {
 		if (self::$_schema === null) {
 			$filename = sprintf("schema.%s.php", basename(Config::get('DB_DATABASE', 'schema')));
@@ -198,6 +334,13 @@ class RestInPeace {
 		}
 		return self::$_schema;
 	}
+
+	/**
+	 * Retrieves the schema view for a given view.
+	 *
+	 * @param string $view The name of the view.
+	 * @return mixed The schema view for the given view.
+	 */
 	static public function getSchemaView($view) {
 		$schema = self::getSchema();
 		if (!isset($schema['views'][$view])) {
@@ -205,6 +348,13 @@ class RestInPeace {
 		}
 		return View::from($schema['views'][$view]);
 	}
+
+	/**
+	 * Retrieves the schema table for a given table.
+	 *
+	 * @param string $table The name of the table.
+	 * @return mixed The schema table for the given table.
+	 */
 	static public function getSchemaTable($table) {
 		$schema = self::getSchema();
 		if (!isset($schema['tables'][$table])) {
@@ -212,6 +362,13 @@ class RestInPeace {
 		}
 		return Table::from($schema['tables'][$table]);
 	}
+
+	/**
+	 * Determines if a table is visible.
+	 *
+	 * @param string $table The name of the table.
+	 * @return bool Returns true if the table is visible, false otherwise.
+	 */
 	static public function isVisible($table) {
 		if (is_string($table)) {
 			$table = self::getSchemaTable($table);
@@ -225,6 +382,15 @@ class RestInPeace {
 		}
 		return true;
 	}
+
+	/**
+	 * Initializes the RestInPeace class.
+	 *
+	 * This method is responsible for initializing the RestInPeace class and performing any necessary setup tasks.
+	 * It should be called before using any other methods or properties of the RestInPeace class.
+	 *
+	 * @return void
+	 */
 	public static function init() {
 		self::checkClients();
 

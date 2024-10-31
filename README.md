@@ -45,17 +45,17 @@ RestInPeace takes the complexity out of building REST APIs by leveraging your da
 
 ## Installation
 
-Certainly! If your RestInPeace module is available via Composer, you can easily install it using the following steps:
+You can easily install it via Composer using the following steps:
 
-## Step 1: Create a New or Navigate to an ExistinProject**
+## Step 1: Create a new or navigate to an existing project
 
 Ensure you have a PHP project set up where you want to integrate RestInPeace. If you don't have an existing project, create a new one using your preferred structure.
 
-## Step 2: Open a Terminal or Command Prompt
+## Step 2: Open a terminal or command prompt
 
 Navigate to the root directory of your PHP project using the terminal or command prompt.
 
-## Step 3: Run Composer Require Command
+## Step 3: Run composer require command
 
 Use the following Composer command to install RestInPeace:
 
@@ -69,7 +69,7 @@ Composer will automatically fetch the RestInPeace module and its dependencies an
 
 Depending on the design of RestInPeace, it might require some configuration. Check the module's documentation for any configuration steps or required settings. Configuration may involve specifying database connection details, API routing, or other customization options.
 
-## Step 5: Autoload the Composer Dependencies
+## Step 5: Autoload the composer dependencies
 
 Ensure that you have autoloaded the Composer dependencies in your project. If your project doesn't already have an autoload file (usually named `vendor/autoload.php`), make sure to include it in your project files:
 
@@ -80,16 +80,14 @@ require_once __DIR__ . '/vendor/autoload.php';
 ## Setting `.env`
 Parameters start with `RESTINPEACE_` or `RIP_` and are in uppercase. The following parameters are available:
 
-|Parameter|Description|Default|
-|---|---|---|
-|CLIENTS|Allowed IP addresses to access the application. Comma separated. Leave blank to allow all IP addresses.||
-|APP_PATH|Path to the application. Leave blank to use `DOCUMENT_ROOT`. Relative paths are allowed, and are relative to `DOCUMENT_ROOT`|`.`|
-|DATABASE_PATH|Path to the database. Leave blank to use `database`. Relative paths are allowed, and are relative to `APP_PATH`|`database`|
-|CONFIG_PATH|Path to the configuration file. Leave blank to use `config`. Relative paths are allowed, and are relative to `APP_PATH`|`config`|
-|LOGS_PATH|Path to the log file. Leave blank to use `logs`. Relative paths are allowed, and are relative to `APP_PATH`|`logs`|
-|LOGS_LEVEL|Log level. Available values are `DEBUG`, `INFO`, `WARNING`, `ERROR` and `CRITICAL`|`INFO`|
-|SCHEMA_CACHE|Duration in seconds to cache the schema. Negative values disable caching.|`86400` (1&nbsp;day)|
-HIDE_SUFFIXED_VIEWS|Keep all views in the schema.|`false`|
+- **CLIENTS** — Allowed IP addresses to access the application. Comma separated. Leave blank to allow all IP addresses. Default : Full access
+- **APP_PATH** — Path to the application. Leave blank to use `DOCUMENT_ROOT`. Relative paths are allowed, and are relative to `DOCUMENT_ROOT`. Default : `.` (current directory)
+- **DATABASE_PATH** — Path to the database. Leave blank to use `database`. Relative paths are allowed, and are relative to `APP_PATH`. Default : `database`
+- **CONFIG_PATH** — Path to the configuration file. Leave blank to use `config`. Relative paths are allowed, and are relative to `APP_PATH`. Default : `config`
+- **LOGS_PATH** — Path to the log file. Leave blank to use `logs`. Relative paths are allowed, and are relative to `APP_PATH`. Default : `logs`
+- **LOGS_LEVEL** — Log level. Available values are `DEBUG`, `INFO`, `WARNING`, `ERROR` and `CRITICAL`. Default : `INFO`
+- **SCHEMA_CACHE** — Duration in seconds to cache the schema. Negative values disable caching. Default : `86400` (1 day)
+- **HIDE_SUFFIXED_VIEWS** — Keep all views in the schema. Default : `false`
 
 ## Using Database Views
 <!-- Database views are not included in the schema by default. To include them, set `HIDE_SUFFIXED_VIEWS` to `true`. -->
@@ -103,16 +101,13 @@ To create a suffixes view for a table, create a view with the same name as the t
 - Are named `schema.<database>.php`.
 - Are cached for 1 day by default.
 
-## The config file (`config/restinpeace.php`);
-
-|Parameter|Description|Default|
-|---|---|---|
-|include_tables|An array of __tables__ or __views__ will be included in the generated schema, Empty array means all tables and views will be included. When set, `excluded_tables` will be ignored.|`[]`|
-|excluded_tables|An array of __tables__ or __views__ will be excluded from the generated schema. Will be ignored if `include_tables` is set.|`[]`|
-|hidden_tables|An array of __tables__ or __views__ will be included in the schema but will be hidden from the entry points (router).|`[]`|
-|hide_suffixed_views|Remove suffixed views from the schema and entry points.|`true`|
-|primary_key_pattern|A regex pattern to match primary keys|`^id$`|
-|foreign_key_pattern|A regex pattern to match foreign keys|`^([a-0-9_]+)_id$`|
+## The config file (`{CONFIG_PATH}/restinpeace.php`);
+- **excluded_tables** — An array of tables or views to exclude from the generated schema. Will be ignored if `include_tables` is set.
+- **include_tables** — An array of tables or views to include in the generated schema. Empty array means all tables and views will be included. When set, `excluded_tables` will be ignored.
+- **hidden_tables** — An array of tables or views to include in the schema but will be hidden from the entry points (router).
+- **hide_suffixed_views** — Remove suffixed views from the schema and entry points.
+- **primary_key_pattern** — A regex pattern to match primary keys.
+- **foreign_key_pattern** — A regex pattern to match foreign keys.
 
 
 ## Nomenclature

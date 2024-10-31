@@ -4,11 +4,17 @@ namespace RestInPeace;
 
 abstract class Database {
 	use HasAccessors;
+	/** @var string A regex pattern to match primary keys */
 	static protected $primary_key_pattern = '^id$';	// A regex pattern to match primary keys
+	/** @var string A regex pattern to match foreign keys */
 	static protected $foreign_key_pattern = '^([a-z0-9_]+)_id$';	// A regex pattern to match primary keys
+	/** @var PDO $_pdo The PDO instance for database connection */
 	private $_pdo;
+	/** @var PDOStatements[] $statements An array to hold prepared SQL statements */
 	private $statements = [];
+	/** @var array $schema An array to store the database schema */
 	public $schema = [];
+	/** @var array|null $tables Stores the database tables information */
 	private $tables = null;
 	public $views = null;
 	public function __construct() {
@@ -66,7 +72,7 @@ abstract class Database {
 	public function analyse() {
 		$tables = $this->getTables();
 		$views = $this->getViews();
-		foreach ($tables as $key=>&$table) {
+		foreach ($tables as $key=>$table) {
 			if (empty($views)) break;	// If we just removed the last view
 			$table->processSuffixedViews($views);
 		}
