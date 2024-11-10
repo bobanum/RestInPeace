@@ -122,8 +122,11 @@ abstract class Database {
 	 * @return array An array containing the results of the analysis.
 	 */
 	public function analyse() {
+		/** @var Table[] $tables */
 		$tables = $this->getTables();
+		/** @var View[] $views */
 		$views = $this->getViews();
+		// vdd($tables, $views);
 		foreach ($tables as $table) {
 			if (empty($views)) break;	// If we just removed the last view
 			$table->processSuffixedViews($views);
@@ -132,7 +135,7 @@ abstract class Database {
 		foreach ($tables as $table) {
 			foreach ($table->foreign_keys as $fk) {
 				$foreignTable = $fk['table'];
-				$table->addRelation($tables[$foreignTable], $fk['from']);
+				$table->addRelation(new Relation\BelongsTo($table, $tables[$foreignTable], $fk['from']));
 			}
 			// Check for unprocessed foreign keys
 			foreach ($table->columns as $columnName=>$column) {
@@ -140,20 +143,19 @@ abstract class Database {
 				if (empty($matches)) continue;
 				$relationName = $matches[1];
 				if (isset($table->relations[$relationName])) continue;
-				$pattern = sprintf("~^%s([^_]*)$~", preg_quote($foreignTable));
-				$ft = array_filter(array_keys($tables), fn($name) => preg_match($pattern, $name));
-				if (count($ft) === 0) continue;
-				if (count($ft) > 1) {
-					// Keep the shortest one
-					$ft = array_reduce($ft, function ($carry, $item) {
-						if (empty($carry)) return $item;
-						if (strlen($item) < strlen($carry)) return $item;
-						return $carry;
-					});
-				} else {
-					$ft = array_pop($ft);
+				
+				$ft = $table->findForeignTable($tables, $columnName);
+				if (empty($ft)) continue;
+				$relation = new Relation\BelongsTo($ft, $table, $column['name']);
+				$table->addRelation($relation);
+			}
+			$relBT = array_filter($table->relations, fn($rel) => $rel->type === Relation::BELONGS_TO);
+			while (count($relBT) > 1) {
+				$rel1 = array_pop($relBT);
+				foreach ($relBT as $rel2) {
+					// vd($rel1, $rel2);
+					// $rel1->table->addRelation(new Relation\BelongsToMany($rel1->table, $rel2->table, $table));
 				}
-				$table->addRelation($tables[$ft], $column['name']);
 			}
 		}
 		return [
@@ -217,8 +219,10 @@ abstract class Database {
 				return true;
 			}
 		} catch (\Exception $exception) {
-			vd($exception->getMessage());
-			return false;
+			throw new \Exception($exception->getMessage());
+			
+			vdj($exception->getMessage(), $query, $data);
+			// return ['status' => 'error', 'message' => $exception->getMessage()];
 		}
 	}
 	/**

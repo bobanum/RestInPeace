@@ -34,4 +34,19 @@ class Router {
 		}
 		return call_user_func_array($callback, Request::$parts);
 	}
+	static function post($path, $callback = null) {
+		$method = $_SERVER['REQUEST_METHOD'];
+		if ($method !== 'POST') {
+			return;
+		}
+		if (Request::match($path) === false) {
+			return;
+		}
+		if (empty($callback)) return true;
+		
+		if (is_string($callback)) {
+			$callback = [RestInPeace::class, $callback];
+		}
+		return call_user_func_array($callback, Request::$parts);
+	}
 }

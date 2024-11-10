@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "../../../../../heros-mobile"
+		},
+		{
+			"path": "../../../.."
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "heros-mobile",
+		"editor.tokenColorCustomizations": {
+			"comments": "",
+			"textMateRules": []
+		}
+	}
+}

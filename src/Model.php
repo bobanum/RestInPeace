@@ -22,16 +22,21 @@ class Model {
 	/** @var array $attributes An array to store the attributes of the model. */
 	public $attributes = [];
 	/** @var TableOrView $table The name of the database table associated with the model. */
-	public $table;
+	protected $table;
 	/**
 	 * Constructor for the Model class.
 	 *
 	 * @param TableOrView $table The table or view associated with the model.
 	 * @param integer $id Optional. The ID of the record to be loaded. Default is null.
 	 */
-	function __construct($table, $id = null) {
+	function __construct($table, $id = null, $data = []) {
 		$this->table = $table;
 		$this->id = $id;
+	}
+	function fill($data) {
+		foreach ($data as $key => $value) {
+			$this->attributes[$key] = $value;
+		}
 	}
 	/**
 	 * Fetches a record by its ID.
@@ -52,9 +57,10 @@ class Model {
 		}
 		$result = $this->excludeColumns($result[0]);
 		$this->table->addHateoas($result);
-		foreach ($result as $key => $value) {
-			$this->attributes[$key] = $value;
-		}
+		$this->fill($result);
+		// foreach ($result as $key => $value) {
+		// 	$this->attributes[$key] = $value;
+		// }
 		return $this;
 	}
 	/**
@@ -69,17 +75,22 @@ class Model {
 		} else {
 			$relations = array_intersect_key($this->table_relations, array_flip($relationNames));
 		}
+		
 		foreach ($relations as $relation) {
 			$exclude_r = [$relation->foreign_key, ...self::$excluded];
 			$query = [$relation->getSelect()];
-
 			$result = $this->table->execute($query, $this->id);
 			$result = array_map(fn($row) => $this->excludeColumns($row, $exclude_r), $result);
 			array_walk($result, fn(&$row) => $this->table->addRelatedHateoas($relation, $row));
-			if ($relation->type === Relation::BELONGS_TO) {
-				foreach ($result[0] as $key => $value) {
-					$this->attributes[$relation->name . '_' . $key] = $value;
-				}
+			if (count($result) === 0 && $relation->type === Relation::BELONGS_TO) {
+				$this->attributes[$relation->name] = null;
+			} else if (count($result) === 0) {
+				$this->attributes[$relation->name] = [];
+			} else if ($relation->type === Relation::BELONGS_TO) {
+				$result = $result[0];
+				unset($this->attributes[$relation->foreign_key]);
+				unset($result[$this->table->get_foreign_key()]);
+				$this->attributes[$relation->name] = $result;
 			} else {
 				$this->attributes[$relation->name] = $result;
 			}
@@ -106,7 +117,7 @@ class Model {
 	 * @return array The row with the specified columns excluded.
 	 */
 	function excludeColumns($row, $columns = []) {
-		$columns = array_flip([...self::$excluded, ...$columns, ]);
+		$columns = array_flip([...self::$excluded, ...$columns,]);
 		$row = array_diff_key($row, $columns);
 		return $row;
 	}
@@ -146,4 +157,41 @@ class Model {
 		}
 		$this->attributes[$name] = $value;
 	}
+	function save() {
+		$query = [];
+		$columnNames = array_keys($this->table->columns);
+		$columnNames = array_diff($columnNames, self::$excluded);
+		$pk = $this->table_primary_key;
+		$values = array_intersect_key($this->attributes, array_flip($columnNames));
+		unset($values[$pk]);
+		if ($this->$pk) {
+			$cols = array_map(fn($col) => "`$col` = ?", array_keys($values));
+			$cols = implode(", ", $cols);
+			$values[$pk] = $this->$pk;
+			$query['UPDATE'] = sprintf('`%s` SET %s WHERE `%s` = ?', $this->table_name, $cols, $this->table_primary_key);
+		} else {
+			$cols = array_map(fn($col) => "`$col`", array_keys($values));
+			$cols = implode(", ", $cols);
+			$vals = array_fill(0, count($values), "?");
+			$vals = implode(", ", $vals);
+			
+			$query['INSERT INTO'] = sprintf('`%s` (%s) VALUES (%s)', $this->table_name, $cols, $vals);
+		}
+		// vd($query, $values);
+		$result = $this->table->execute($query, $values);
+		return $result;
+	}
+	function hasOne($table, $foreign_key) {
+	}
+	function hasMany($table, $foreign_key) {
+	}
+	function belongsTo($table, $foreign_key) {
+	}
+	function belongsToMany($table, $foreign_key) {
+	}
+	function belongsToThrough($table, $foreign_key) {
+	}
+	function hasManyThrough($table, $foreign_key) {
+	}
+
 }

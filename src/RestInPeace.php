@@ -1,5 +1,7 @@
 <?php
+
 namespace RestInPeace;
+
 /**
  * Represents the RestInPeace class.
  */
@@ -151,7 +153,7 @@ class RestInPeace {
 		}
 		self::connect();
 		$table = Table::from($schema['tables'][$table], self::$db);
-		$result = $table->all($suffix, ['id'=>1, 'limit'=>10, 'offset'=>0, 'by'=>'id', 'order'=>'ASC']);
+		$result = $table->all($suffix, ['id' => 1, 'limit' => 10, 'offset' => 0, 'by' => 'id', 'order' => 'ASC']);
 		////
 		// Adding HATEOAS
 		$table->addHateoasArray($result);
@@ -163,7 +165,7 @@ class RestInPeace {
 		];
 		return $result;
 	}
-	
+
 	/**
 	 * Retrieves a single record from the specified table based on the given ID.
 	 *
@@ -174,17 +176,17 @@ class RestInPeace {
 	 */
 	static function getOne($table, $id, $suffix = "index") {
 		$schema = self::getSchema();
-		
+
 		if (!isset($schema['tables'][$table])) {
 			return Response::replyCode(404);
 		}
 		self::connect();
 		$table = Table::from($schema['tables'][$table], self::$db);
 		$result = $table->find($id, $suffix);
-		
+
 		// Adding HATEOAS
 		$table->addHateoasArray($result);
-		
+
 		return $result;
 	}
 
@@ -198,20 +200,20 @@ class RestInPeace {
 	 */
 	static function getOneGreedy($tableName, $id, $suffix = "index") {
 		$schema = self::getSchema();
-		
+
 		if (!isset($schema['tables'][$tableName])) {
 			return Response::replyCode(404);
 		}
-		self::connect();
-		$table = Table::from($schema['tables'][$tableName], self::$db);
+		$db = self::connect();
+		$table = Table::from($schema['tables'][$tableName], $db);
 		$model = new Model($table, $id);
 		$model->fetch();
 		$model->fetchRelated();
 		$result = $model->attributes;
-		
+
 		// Adding HATEOAS
 		// $table->addHateoas($result);
-		
+
 		return $result;
 	}
 
@@ -230,16 +232,38 @@ class RestInPeace {
 		}
 		return $table->related($related, $id);
 	}
-
+	static function update($table, $id, $data = null) {
+		$data = $data ?? $_POST;
+		$table = self::getSchemaTable($table);
+		if (!$table) {
+			return Response::replyCode(404);
+		}
+		if (empty($id)) {
+			$id = null;
+		}
+		if (!empty($data['id']) && $id !== $data['id']) {
+			throw new \Exception("Error Processing Request", 1);
+		}
+		$model = new Model($table, $id);
+		$model->fetch();
+		$model->fill($data);
+		$model->save();
+		return [
+			'status' => 'success',
+			'data' => $model->attributes
+		];
+	}
 	/**
 	 * Analyzes the database and returns the analysis result.
+	 * @param Database $db The database to analyze.
 	 *
 	 * @return mixed The analysis result.
 	 */
-	public static function analyseDb() {
-		return self::$db->analyse();
+	public static function analyseDb($db = null) {
+		$db = $db ?? self::connect();
+		return $db->analyse();
 	}
-	
+
 	/**
 	 * Checks the clients.
 	 *
@@ -273,7 +297,7 @@ class RestInPeace {
 			!in_array($_SERVER['HTTP_REFERER'], (array) $clients)
 		);
 	}
-	
+
 	/**
 	 * Retrieves the path information for the current request.
 	 *
@@ -288,11 +312,11 @@ class RestInPeace {
 		}
 		return preg_replace('~/++~', '/', substr($_SERVER['PHP_SELF'], strlen($_SERVER['SCRIPT_NAME'])) . '/');
 	}
-	
+
 	/**
 	 * Connects to the database.
 	 *
-	 * @return void
+	 * @return \PDO The database connection.
 	 */
 	protected static function connect() {
 		if (!empty(self::$db)) {
@@ -312,7 +336,7 @@ class RestInPeace {
 		}
 		return self::$db;
 	}
-	
+
 	/**
 	 * Retrieves the schema.
 	 *
@@ -325,10 +349,11 @@ class RestInPeace {
 			if ($schema === false) {
 				$schema = self::analyseDb();
 				$schema['updated_at'] = time();
-				Config::output($filename, $schema);
+				// Config::output($filename, $schema);
+				Config::outputModels($schema);
 			} else {
-				$schema['tables'] = array_map(fn ($table) => Table::from($table, self::$db), $schema['tables'] ?? []);
-				$schema['views'] = array_map(fn ($view) => View::from($view, self::$db), $schema['views'] ?? []);
+				$schema['tables'] = array_map(fn($table) => Table::from($table, self::$db), $schema['tables'] ?? []);
+				$schema['views'] = array_map(fn($view) => View::from($view, self::$db), $schema['views'] ?? []);
 			}
 			self::$_schema = $schema;
 		}

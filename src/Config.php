@@ -71,7 +71,11 @@ class Config {
 	 * @return string The full path.
 	 */
 	static public function path($path = '') {
-		return RIP::absolutePath(self::get('CONFIG_PATH', 'config'), $path);
+		$result = self::get('CONFIG_PATH', 'config');
+		if (!empty($path)) {
+			$result .= '/' . $path;
+		}
+		return RIP::app_path($result);
 	}
 	/**
 	 * Checks if the given file has timed out.
@@ -117,13 +121,13 @@ class Config {
 				$data = (array) $data;
 			}
 			// Remove private properties
-			$data = array_filter($data, fn ($key) => $key[0] !== "\0", ARRAY_FILTER_USE_KEY);
+			$data = array_filter($data, fn($key) => $key[0] !== "\0", ARRAY_FILTER_USE_KEY);
 		}
 		if (!is_array($data)) {
 			return $data;
 		}
-		$data = array_map(fn ($item) => self::normalizeData($item), $data);
-		
+		$data = array_map(fn($item) => self::normalizeData($item), $data);
+
 		return $data;
 	}
 	/**
@@ -145,6 +149,24 @@ class Config {
 		self::mkdir(dirname($filepath));
 		file_put_contents($filepath, $output);
 		return $data;
+	}
+	public static function outputModels($data) {
+		// $filename = sprintf("schema.%s.php", basename(Config::get('DB_DATABASE', 'schema')));
+		['tables' => $tables, 'views' => $views] = $data;
+		self::mkdir(RIP::app_path("models/traits"));
+		foreach ($tables as $tableName => $table) {
+			$modelName = ucfirst($tableName);
+			$filename = RIP::app_path("models/{$modelName}.php");
+			$output = $table->modelOutput();
+			file_put_contents($filename, $output);
+			$traitName = ucfirst($tableName) . 'Trait';
+			$filename = RIP::app_path("models/traits/{$traitName}.php");
+			if (!file_exists($filename)) {
+				$output = $table->traitOutput();
+				file_put_contents($filename, $output);
+			}
+		}
+		return;
 	}
 	/**
 	 * Creates a directory with the specified path and mode.

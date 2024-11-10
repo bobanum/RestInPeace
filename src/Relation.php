@@ -13,9 +13,9 @@ class Relation {
 	public $name;
 	/** @var string $type The type of the relation */
 	public $type;
-	/** @var string $table The name of the database table associated with the relation */
+	/** @var TableOrView $table The name of the database table associated with the relation */
 	public $table;
-	/** @var string $foreign_table The name of the foreign table in the relationship */
+	/** @var TableOrView $foreign_table The name of the foreign table in the relationship */
 	public $foreign_table;
 	/** @var string $foreign_key The foreign key associated with the relation */
 	public $foreign_key;
@@ -35,12 +35,12 @@ class Relation {
 	 * @param TableOrView $foreign_table The foreign table or view involved in the relation.
 	 * @param string $foreign_key The foreign key used in the relation.
 	 */
-	function __construct($type, TableOrView $table, TableOrView $foreign_table, $foreign_key) {
+	function __construct($type, TableOrView $table, TableOrView $foreign_table, $foreign_key = null) {
 		$this->type = $type;
-		$this->table = $table->name;
-		$this->foreign_table = $foreign_table->name;
-		$this->foreign_key = $foreign_key;
-		$this->name = ($this->type === self::BELONGS_TO) ? preg_replace("~_id$~", '', $foreign_key) : $this->foreign_table;
+		$this->table = $table;
+		$this->foreign_table = $foreign_table;
+		$this->foreign_key = $foreign_key ?? $table->get_foreign_key();
+		$this->name = $this->foreign_table->name;
 	}
 	/**
 	 * Converts the current relation configuration to an array format.
@@ -57,11 +57,9 @@ class Relation {
 	 * @param bool $long Optional. If true, returns the long version of the select statement. Default is true.
 	 * @return string The select statement.
 	 */
-	function getSelect($long = true) {
+	public function getSelect() {
 		if ($this->type === Relation::BELONGS_TO) {
-			return $long
-				? sprintf('SELECT * FROM %1$s WHERE id = (SELECT %2$s FROM %3$s WHERE id = ?)', $this->foreign_table, $this->foreign_key, $this->table)
-				: sprintf('SELECT * FROM %1$s WHERE id = ?', $this->foreign_table);
+			return sprintf('SELECT * FROM %1$s WHERE id = (SELECT %2$s FROM %3$s WHERE id = ?)', $this->foreign_table, $this->foreign_key, $this->table);
 		} else if ($this->type === Relation::HAS_MANY) {
 			return sprintf('SELECT * FROM `%1$s` WHERE `%2$s` = ?', $this->foreign_table, $this->foreign_key);
 		}
