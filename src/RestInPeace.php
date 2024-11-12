@@ -156,7 +156,7 @@ class RestInPeace {
 		$result = $table->all($suffix, ['id' => 1, 'limit' => 10, 'offset' => 0, 'by' => 'id', 'order' => 'ASC']);
 		////
 		// Adding HATEOAS
-		$table->addHateoasArray($result);
+		// $table->addHateoasArray($result);
 
 		$result = [
 			"count" => count($result),
@@ -182,37 +182,10 @@ class RestInPeace {
 		}
 		self::connect();
 		$table = Table::from($schema['tables'][$table], self::$db);
-		$result = $table->find($id, $suffix);
+		$result = $table->find($id, $suffix)[0];
 
 		// Adding HATEOAS
-		$table->addHateoasArray($result);
-
-		return $result;
-	}
-
-	/**
-	 * Retrieves a single record from the specified table based on the given ID.
-	 *
-	 * @param string $table The name of the table.
-	 * @param int $id The ID of the record to retrieve.
-	 * @param string $suffix The suffix to append to the find operation (default: "index").
-	 * @return mixed The retrieved record, or a 404 response if the table does not exist.
-	 */
-	static function getOneGreedy($tableName, $id, $suffix = "index") {
-		$schema = self::getSchema();
-
-		if (!isset($schema['tables'][$tableName])) {
-			return Response::replyCode(404);
-		}
-		$db = self::connect();
-		$table = Table::from($schema['tables'][$tableName], $db);
-		$model = new Model($table, $id);
-		$model->fetch();
-		$model->fetchRelated();
-		$result = $model->attributes;
-
-		// Adding HATEOAS
-		// $table->addHateoas($result);
+		// $table->addHateoasArray($result);
 
 		return $result;
 	}
@@ -381,8 +354,9 @@ class RestInPeace {
 	 * @return mixed The schema table for the given table.
 	 */
 	static public function getSchemaTable($table) {
+		$table .= '';
 		$schema = self::getSchema();
-		if (!isset($schema['tables'][$table])) {
+		if (!isset($schema['tables']) || !isset($schema['tables'][$table])) {
 			return false;
 		}
 		return Table::from($schema['tables'][$table]);

@@ -22,21 +22,31 @@ class Model {
 	/** @var array $attributes An array to store the attributes of the model. */
 	public $attributes = [];
 	/** @var TableOrView $table The name of the database table associated with the model. */
-	protected $table;
+	public $table;
 	/**
 	 * Constructor for the Model class.
 	 *
 	 * @param TableOrView $table The table or view associated with the model.
 	 * @param integer $id Optional. The ID of the record to be loaded. Default is null.
 	 */
-	function __construct($table, $id = null, $data = []) {
+	function __construct($table = null, $id = null, $data = []) {
 		$this->table = $table;
-		$this->id = $id;
 	}
 	function fill($data) {
 		foreach ($data as $key => $value) {
 			$this->attributes[$key] = $value;
 		}
+	}
+	function getSelect($condition = '= ?') {
+		if (is_numeric($condition) && $condition > 1) {
+			$condition = 'in (' . implode(',', array_fill(0, $condition, '?')) . ')';
+		}
+		$query = [];
+		$cols = "*";
+
+		$query['SELECT'] = sprintf('%s FROM `%s`', $cols, $this->table_name);
+		$query['WHERE'] = sprintf('`%s` %s', $this->table_primary_key, $condition);
+		return $query;
 	}
 	/**
 	 * Fetches a record by its ID.
@@ -45,22 +55,19 @@ class Model {
 	 * @return $this The model instance.
 	 */
 	function fetch($id = null) {
-		$id = $id ?? $this->id;
-		$query = [];
-		$cols = "*";
+		if (is_null($id)) {
+			$id = [$this->id];
+		} else if (!is_array($id)) {
+			$id = [$id];
+		}
+		$query = $this->getSelect(count($id));
 
-		$query['SELECT'] = sprintf('%s FROM `%s`', $cols, $this->table_name);
-		$query['WHERE'] = sprintf('`%s` = ?', $this->table_primary_key);
-		$result = $this->table->execute($query, [$id]);
+		$result = $this->table->execute($query, $id);
 		if (count($result) === 0) {
 			return $this;
 		}
 		$result = $this->excludeColumns($result[0]);
-		$this->table->addHateoas($result);
 		$this->fill($result);
-		// foreach ($result as $key => $value) {
-		// 	$this->attributes[$key] = $value;
-		// }
 		return $this;
 	}
 	/**
@@ -75,7 +82,7 @@ class Model {
 		} else {
 			$relations = array_intersect_key($this->table_relations, array_flip($relationNames));
 		}
-		
+
 		foreach ($relations as $relation) {
 			$exclude_r = [$relation->foreign_key, ...self::$excluded];
 			$query = [$relation->getSelect()];
@@ -88,11 +95,27 @@ class Model {
 				$this->attributes[$relation->name] = [];
 			} else if ($relation->type === Relation::BELONGS_TO) {
 				$result = $result[0];
-				unset($this->attributes[$relation->foreign_key]);
-				unset($result[$this->table->get_foreign_key()]);
+				// unset($this->attributes[$relation->foreign_key]);
+				// unset($result[$this->table->get_foreign_key()]);
 				$this->attributes[$relation->name] = $result;
 			} else {
 				$this->attributes[$relation->name] = $result;
+			}
+		}
+		return $this;
+	}
+	function fetchWith($with = null) {
+		if ($with === null) {
+			$with = $this->with;
+		}
+		foreach ($with as $relationName) {
+			$names = explode('.', $relationName, 2);
+			$r = array_shift($names);
+			$relation = $this->table->relations[$r];
+			if (!isset($this->attributes[$r])) {
+				$this->attributes[$r] = $relation->fetch($this->id, $names);
+			} else if (count($names) > 0) {
+				$relation->fetchWith($this->attributes[$r], $names);
 			}
 		}
 		return $this;
@@ -174,7 +197,7 @@ class Model {
 			$cols = implode(", ", $cols);
 			$vals = array_fill(0, count($values), "?");
 			$vals = implode(", ", $vals);
-			
+
 			$query['INSERT INTO'] = sprintf('`%s` (%s) VALUES (%s)', $this->table_name, $cols, $vals);
 		}
 		// vd($query, $values);
@@ -193,5 +216,24 @@ class Model {
 	}
 	function hasManyThrough($table, $foreign_key) {
 	}
+	function toArray() {
+		$excluded = [
+			...self::$excluded,
+			// ...array_values(array_map(fn($relation) => $relation->foreign_key, $this->table->relations)),
+		];
+		$attributes = array_filter($this->attributes, fn($key) => !in_array($key, $excluded), ARRAY_FILTER_USE_KEY);
 
+		$result = [];
+		foreach ($attributes as $key => $value) {
+			if ($value === null) {
+				continue;
+			} else if (is_object($value) && method_exists($value, 'toArray')) {
+				$value = $value->toArray();
+			} else if (is_array($value)) {
+				$value = array_map(fn($v) => is_object($v) && method_exists($v, 'toArray') ? $v->toArray() : $v, $value);
+			}
+			$result[$key] = $value;
+		}
+		return $result;
+	}
 }

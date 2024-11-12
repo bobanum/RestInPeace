@@ -153,14 +153,15 @@ class Config {
 	public static function outputModels($data) {
 		// $filename = sprintf("schema.%s.php", basename(Config::get('DB_DATABASE', 'schema')));
 		['tables' => $tables, 'views' => $views] = $data;
-		self::mkdir(RIP::app_path("models/traits"));
+		self::mkdir(RIP::app_path("models"));
+		self::mkdir(RIP::app_path("traits"));
 		foreach ($tables as $tableName => $table) {
 			$modelName = ucfirst($tableName);
 			$filename = RIP::app_path("models/{$modelName}.php");
 			$output = $table->modelOutput();
 			file_put_contents($filename, $output);
 			$traitName = ucfirst($tableName) . 'Trait';
-			$filename = RIP::app_path("models/traits/{$traitName}.php");
+			$filename = RIP::app_path("traits/{$traitName}.php");
 			if (!file_exists($filename)) {
 				$output = $table->traitOutput();
 				file_put_contents($filename, $output);

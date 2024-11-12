@@ -25,7 +25,7 @@ trait ModelOutputTrait {
         }
         $attributes = implode("\n", $attributes);
         $result = <<<"EOD"
-            protected \$attributes = [
+            public \$attributes = [
         {$attributes}
             ];
         EOD;
@@ -46,8 +46,7 @@ trait ModelOutputTrait {
         namespace RestInPeace\\Models;
         use RestInPeace\\Model;
         class {$modelName} extends Model {
-            use {$modelName}Trait;
-            protected \$table = '{$tableName}';
+            use Traits\\{$modelName}Trait;
         {$attributes}
         {$relations}
         }
@@ -58,13 +57,13 @@ trait ModelOutputTrait {
         $modelName = ucfirst($this->name);
         $output = <<<"EOD"
         <?php
-        namespace RestInPeace\\Models;
+        namespace RestInPeace\\Models\\Traits;
         trait {$modelName}Trait {
             protected \$hidden = ['created_at', 'updated_at'];
             protected \$fillable = [];
             protected \$casts = [];
-            protected \$with = [];
-            protected \$appends = [];
+            public \$with = [];
+            public \$appends = [];
         }
         EOD;
         return $output;

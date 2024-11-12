@@ -37,7 +37,7 @@ class TableOrView {
      * @param Database $database The database connection or instance.
      * @param string|null $name The name of the table or view. Default is null.
      */
-    function __construct(Database $database, $name = null) {
+    function __construct(Database $database = null, $name = null) {
         $this->database = $database;
         $this->name = $name;
     }
@@ -103,16 +103,10 @@ class TableOrView {
         $this->relations[$relation->name] = $relation;
         switch ($relation->type) {
             case Relation::BELONGS_TO:
+                if ($relation->foreign_key !== $relation->foreign_table->get_foreign_key()) return;
                 return $relation->foreign_table->addRelation(new Relation\HasMany($relation->foreign_table, $relation->table, $relation->foreign_key));
-                // $table->addRelation(new Relation\BelongsTo($tables[$foreignTable], $table, $fk['from']));
-                // vd(new Relation\HasMany($relation->foreign_table, $relation->table));
-                // vdd($this->name, $relation->foreign_table->name,$relation->table->name);
-                // return $relation->foreign_table->addRelation(new Relation\HasMany($relation->foreign_table, $relation->table));
             case Relation::HAS_MANY:
-                $relation->foreign_table->addRelation(new Relation\BelongsTo($relation->table, $relation->foreign_table, $relation->foreign_key));
-                // $tables[$foreignTable]->addRelation(new Relation\HasMany($tables[$foreignTable],$table, $fk['from']));
-                // vdd($relation->foreign_table->name, $relation->table->name);
-                // return $relation->table->addRelation(new Relation\BelongsTo($relation->foreign_table, $relation->table));
+                return $relation->foreign_table->addRelation(new Relation\BelongsTo($relation->table, $relation->foreign_table, $relation->foreign_key));
             case Relation::BELONGS_TO_MANY:
                 // return $relation->table->addRelation(new Relation\BelongsToMany($relation->foreign_table, $relation->table, $relation->pivot_table));
         }
@@ -237,8 +231,11 @@ class TableOrView {
      * @param mixed $args The arguments to pass to the function.
      * @return mixed The result of the function execution.
      */
-    function execute(...$args) {
-        return $this->database->execute(...$args);
+    function execute($query, $data) {
+        $class= __NAMESPACE__ . '\\Models\\'. ucfirst($this->name);
+        $result = $this->database->executeClass($class, $query, $data);
+		array_walk($result, fn(&$model) => $model->table = $this);
+        return $result;
     }
     /**
      * Finds a record by its ID.
@@ -260,14 +257,16 @@ class TableOrView {
         $query['WHERE'] = sprintf('`%s` = ?', $this->primary_key);
 
         self::addParams($query);
-        $result = [$query];
-        $result = $this->database->execute($query, [$id]);
-        // $result = [$query];
-
+        $result = $this->execute($query, [$id]);
+        
         if ($result === false) {
             return Response::replyCode(404);
         }
-
+        $model = $result[0];
+        $model->table = $this;
+        if (!empty($model->with)) {
+            $model->fetchWith();
+        }
         // if (empty($result)) {
         // 	return Response::replyCode(204);
         // }
@@ -304,12 +303,12 @@ class TableOrView {
         // if (empty($result)) {
         // 	return Response::replyCode(204);
         // }
-        if ($relation->type === Relation::BELONGS_TO) {
-            $result = $result[0];
-            $realRelated->addHateoas($result);
-        } else {
-            $realRelated->addHateoasArray($result);
-        }
+        // if ($relation->type === Relation::BELONGS_TO) {
+        //     $result = $result[0];
+        //     $realRelated->addHateoas($result);
+        // } else {
+        //     $realRelated->addHateoasArray($result);
+        // }
         return $result;
     }
 

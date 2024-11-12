@@ -88,9 +88,9 @@ abstract class Database {
 	 */
 	static public function normalizeWhere($where, $op = 0) {
 		if (is_string($where)) return $where;
-		
-		$ops = [' AND ', ' OR ', ];
-		
+
+		$ops = [' AND ', ' OR ',];
+
 		$where = array_map(function ($item) use ($op) {
 			if (is_string($item)) return $item;
 			return self::normalizeWhere($item, 1 - $op);
@@ -138,12 +138,12 @@ abstract class Database {
 				$table->addRelation(new Relation\BelongsTo($table, $tables[$foreignTable], $fk['from']));
 			}
 			// Check for unprocessed foreign keys
-			foreach ($table->columns as $columnName=>$column) {
-				preg_match("~".self::$foreign_key_pattern."~", $column['name'], $matches);
+			foreach ($table->columns as $columnName => $column) {
+				preg_match("~" . self::$foreign_key_pattern . "~", $column['name'], $matches);
 				if (empty($matches)) continue;
 				$relationName = $matches[1];
 				if (isset($table->relations[$relationName])) continue;
-				
+
 				$ft = $table->findForeignTable($tables, $columnName);
 				if (empty($ft)) continue;
 				$relation = new Relation\BelongsTo($ft, $table, $column['name']);
@@ -152,9 +152,12 @@ abstract class Database {
 			$relBT = array_filter($table->relations, fn($rel) => $rel->type === Relation::BELONGS_TO);
 			while (count($relBT) > 1) {
 				$rel1 = array_pop($relBT);
+				if ($rel1->foreign_table->get_foreign_key() !== $rel1->foreign_key) continue;
 				foreach ($relBT as $rel2) {
-					// vd($rel1, $rel2);
-					// $rel1->table->addRelation(new Relation\BelongsToMany($rel1->table, $rel2->table, $table));
+					if ($rel2->foreign_table->get_foreign_key() !== $rel2->foreign_key) continue;
+					// var_dump($table->name, $rel1->foreign_table->name, $rel2->foreign_table->name, $rel1->foreign_key);
+					$rel1->foreign_table->addRelation(new Relation\BelongsToMany($rel1->foreign_table, $rel2->foreign_table, $table));
+					$rel2->foreign_table->addRelation(new Relation\BelongsToMany($rel2->foreign_table, $rel1->foreign_table, $table));
 				}
 			}
 		}
@@ -177,11 +180,13 @@ abstract class Database {
 	 * @return \PDOStatement The prepared statement object.
 	 */
 	public function prepare($query) {
-		$hash = crc32($query);
-		if (empty($this->statements[$hash])) {
-			$this->statements[$hash] = $this->pdo->prepare($query);
-		}
-		return $this->statements[$hash];
+		return $this->pdo->prepare($query);
+		//TODO: Check relevance of this method
+		// $hash = crc32($query);
+		// if (empty($this->statements[$hash])) {
+		// 	$this->statements[$hash] = $this->pdo->prepare($query);
+		// }
+		// return $this->statements[$hash];
 	}
 	/**
 	 * Executes a given SQL query with the provided data.
@@ -220,7 +225,45 @@ abstract class Database {
 			}
 		} catch (\Exception $exception) {
 			throw new \Exception($exception->getMessage());
-			
+
+			vdj($exception->getMessage(), $query, $data);
+			// return ['status' => 'error', 'message' => $exception->getMessage()];
+		}
+	}
+	public function executeClass($class, $query, $data) {
+		$query = $this->normalizeQuery($query);
+		file_put_contents('query.sql', $query . "\n", FILE_APPEND);
+		try {
+			$statement = $this->prepare($query);
+
+			$statement->setFetchMode(\PDO::FETCH_CLASS, $class);
+			if (count($data, COUNT_RECURSIVE) > count($data)) {
+				$data = iterator_to_array(new \RecursiveIteratorIterator(new \RecursiveArrayIterator($data)), false);
+			}
+
+			if ($statement->execute($data) === true) {
+				$sequence = null;
+
+				switch (strstr($query, ' ', true)) {
+					case 'INSERT':
+					case 'REPLACE':
+						return $this->pdo->lastInsertId($sequence);
+
+					case 'UPDATE':
+					case 'DELETE':
+						return $statement->rowCount();
+
+					case 'SELECT':
+					case 'EXPLAIN':
+					case 'PRAGMA':
+					case 'SHOW':
+						return self::fetch($statement);
+				}
+				return true;
+			}
+		} catch (\Exception $exception) {
+			throw new \Exception($exception->getMessage());
+
 			vdj($exception->getMessage(), $query, $data);
 			// return ['status' => 'error', 'message' => $exception->getMessage()];
 		}
@@ -236,16 +279,16 @@ abstract class Database {
 		if (count($result) === 0) {
 			return $result;
 		}
-		foreach (array_keys($result[0]) as $idx => $name) {
-			$meta = $stmt->getColumnMeta($idx);
-			if (isset($meta['sqlite:decl_type'])) {
-				if (preg_match("#int|dec|num|real|float|long|short|double|byte|timestamp#i", $meta['sqlite:decl_type'])) {
-					for ($i = 0, $len = count($result); $i < $len; $i += 1) {
-						$result[$i][$name] = floatval($result[$i][$name]);
-					}
-				}
-			}
-		}
+		// foreach (array_keys($result[0]) as $idx => $name) {
+		// 	$meta = $stmt->getColumnMeta($idx);
+		// 	if (isset($meta['sqlite:decl_type'])) {
+		// 		if (preg_match("#int|dec|num|real|float|long|short|double|byte|timestamp#i", $meta['sqlite:decl_type'])) {
+		// 			for ($i = 0, $len = count($result); $i < $len; $i += 1) {
+		// 				$result[$i][$name] = floatval($result[$i][$name]);
+		// 			}
+		// 		}
+		// 	}
+		// }
 		return $result;
 	}
 }

@@ -16,17 +16,22 @@ class BelongsToMany extends Relation {
 	}
 	public function getSelect($condition = '= ?') {
 		$sql = "SELECT f.*"
-			. "FROM `{$this->foreign_table}` f"
-			. "INNER JOIN `{$this->pivot_table}` p"
-			. "ON p.`{$this->foreign_key}` = f.id"
-			. "WHERE p.`{$this->local_key}` {$condition}";
+			. " FROM `{$this->foreign_table}` f"
+			. " INNER JOIN `{$this->pivot_table}` p"
+			. " ON p.`{$this->foreign_key}` = f.id"
+			. " WHERE p.`{$this->local_key}` {$condition}";
 		return $sql;
 	}
 	public function outputModel() {
 		return <<<"EOD"
 		public function get_{$this->name}() {
-			return \$this->belongsToMany('{$this->foreign_table}', '{$this->pivot_table}', '{$this->foreign_key}', '{$this->local_key}');
+			return \$this->belongsToMany('{$this->foreign_table}', '{$this->foreign_key}', '{$this->pivot_table}', '{$this->local_key}');
 		}
 	EOD;
+	}
+	public function fetch($id) {
+		$query = $this->getSelect();
+		$result = $this->foreign_table->execute($query, [$id]);
+		return $result;
 	}
 }

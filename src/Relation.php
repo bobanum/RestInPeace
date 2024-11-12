@@ -1,4 +1,5 @@
 <?php
+
 namespace RestInPeace;
 
 /**
@@ -57,12 +58,27 @@ class Relation {
 	 * @param bool $long Optional. If true, returns the long version of the select statement. Default is true.
 	 * @return string The select statement.
 	 */
-	public function getSelect() {
-		if ($this->type === Relation::BELONGS_TO) {
-			return sprintf('SELECT * FROM %1$s WHERE id = (SELECT %2$s FROM %3$s WHERE id = ?)', $this->foreign_table, $this->foreign_key, $this->table);
-		} else if ($this->type === Relation::HAS_MANY) {
-			return sprintf('SELECT * FROM `%1$s` WHERE `%2$s` = ?', $this->foreign_table, $this->foreign_key);
+	public function getSelect($extra = []) {
+		$query = array_merge([
+			"SELECT" => "f.*",
+			"FROM" => "`{$this->foreign_table}` f",
+		], $extra);
+		return $query;
+	}
+	/**
+	 * Fetches a record by its ID, optionally including related records.
+	 *
+	 * @param int $id The ID of the record to fetch.
+	 * @param array $with An array of related records to include.
+	 * @return mixed The fetched record, or null if not found.
+	 */
+	public function fetch($id) {
+		if (!is_array($id)) {
+			$id = [$id];
 		}
+		$query = $this->getSelect(count($id));
+		$result = $this->foreign_table->execute($query, [$id]);
+		return $result;
 	}
 	/**
 	 * Creates a new instance of the class from the given configuration.
