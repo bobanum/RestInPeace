@@ -146,7 +146,7 @@ abstract class Database {
 
 				$ft = $table->findForeignTable($tables, $columnName);
 				if (empty($ft)) continue;
-				$relation = new Relation\BelongsTo($ft, $table, $column['name']);
+				$relation = new Relation\BelongsTo($table, $ft, $column['name']);
 				$table->addRelation($relation);
 			}
 			$relBT = array_filter($table->relations, fn($rel) => $rel->type === Relation::BELONGS_TO);
@@ -224,6 +224,7 @@ abstract class Database {
 				return true;
 			}
 		} catch (\Exception $exception) {
+			vdd($query);
 			throw new \Exception($exception->getMessage());
 
 			vdj($exception->getMessage(), $query, $data);
@@ -262,6 +263,7 @@ abstract class Database {
 				return true;
 			}
 		} catch (\Exception $exception) {
+			vdd($query, $data);
 			throw new \Exception($exception->getMessage());
 
 			vdj($exception->getMessage(), $query, $data);

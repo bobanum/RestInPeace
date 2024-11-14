@@ -40,6 +40,8 @@ class Model {
 	function getSelect($condition = '= ?') {
 		if (is_numeric($condition) && $condition > 1) {
 			$condition = 'in (' . implode(',', array_fill(0, $condition, '?')) . ')';
+		} else {
+			$condition = '= ?';
 		}
 		$query = [];
 		$cols = "*";
