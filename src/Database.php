@@ -2,6 +2,8 @@
 
 namespace RestInPeace;
 
+use Error;
+
 abstract class Database {
 	use HasAccessors;
 	/** @var string A regex pattern to match primary keys */
@@ -224,52 +226,54 @@ abstract class Database {
 				return true;
 			}
 		} catch (\Exception $exception) {
-			vdd($query);
+			vd($query);
 			throw new \Exception($exception->getMessage());
 
 			vdj($exception->getMessage(), $query, $data);
 			// return ['status' => 'error', 'message' => $exception->getMessage()];
 		}
 	}
-	public function executeClass($class, $query, $data) {
-		$query = $this->normalizeQuery($query);
-		file_put_contents('query.sql', $query . "\n", FILE_APPEND);
-		try {
-			$statement = $this->prepare($query);
+	// public function executeClass($class, $query, $data) {
+	// 	if (!is_countable($data)) {
+	// 		$data = [$data];
+	// 	}
+	// 	$query = $this->normalizeQuery($query);
+	// 	try {
+	// 		$statement = $this->prepare($query);
 
-			$statement->setFetchMode(\PDO::FETCH_CLASS, $class);
-			if (count($data, COUNT_RECURSIVE) > count($data)) {
-				$data = iterator_to_array(new \RecursiveIteratorIterator(new \RecursiveArrayIterator($data)), false);
-			}
+	// 		$statement->setFetchMode(\PDO::FETCH_CLASS, $class);
+	// 		if (count($data, COUNT_RECURSIVE) > count($data)) {
+	// 			$data = iterator_to_array(new \RecursiveIteratorIterator(new \RecursiveArrayIterator($data)), false);
+	// 		}
 
-			if ($statement->execute($data) === true) {
-				$sequence = null;
+	// 		if ($statement->execute($data) === true) {
+	// 			$sequence = null;
 
-				switch (strstr($query, ' ', true)) {
-					case 'INSERT':
-					case 'REPLACE':
-						return $this->pdo->lastInsertId($sequence);
+	// 			switch (strstr($query, ' ', true)) {
+	// 				case 'INSERT':
+	// 				case 'REPLACE':
+	// 					return $this->pdo->lastInsertId($sequence);
 
-					case 'UPDATE':
-					case 'DELETE':
-						return $statement->rowCount();
+	// 				case 'UPDATE':
+	// 				case 'DELETE':
+	// 					return $statement->rowCount();
 
-					case 'SELECT':
-					case 'EXPLAIN':
-					case 'PRAGMA':
-					case 'SHOW':
-						return self::fetch($statement);
-				}
-				return true;
-			}
-		} catch (\Exception $exception) {
-			vdd($query, $data);
-			throw new \Exception($exception->getMessage());
+	// 				case 'SELECT':
+	// 				case 'EXPLAIN':
+	// 				case 'PRAGMA':
+	// 				case 'SHOW':
+	// 					return self::fetch($statement);
+	// 			}
+	// 			return true;
+	// 		}
+	// 	} catch (\Exception $exception) {
+	// 		vdd($query, $data);
+	// 		throw new \Exception($exception->getMessage());
 
-			vdj($exception->getMessage(), $query, $data);
-			// return ['status' => 'error', 'message' => $exception->getMessage()];
-		}
-	}
+	// 		vdj($exception->getMessage(), $query, $data);
+	// 		// return ['status' => 'error', 'message' => $exception->getMessage()];
+	// 	}
+	// }
 	/**
 	 * Fetches the result from a given statement.
 	 *

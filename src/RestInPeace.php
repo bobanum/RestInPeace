@@ -26,23 +26,13 @@ class RestInPeace {
 	 * @return string The absolute path to the application directory.
 	 */
 	static public function app_path($path = "") {
+
 		if (self::$app_root === null) {
-			self::$app_root = Config::get('APP_PATH', dirname($_SERVER['DOCUMENT_ROOT']));
-			// Testing for relative path
-			$temp = dirname($_SERVER['DOCUMENT_ROOT']) . "/" . self::$app_root;
-			if (file_exists($temp)) {
-				self::$app_root = $temp;
-			}
-			// Trying to find the .env file
-			$temp = self::$app_root;
-			while (file_exists($temp) && !file_exists("{$temp}/.env") && $temp !== dirname($temp)) {
-				$temp = dirname($temp);
-			}
+			self::$app_root = Config::get('APP_PATH', Config::env_path());
 			// 503 error
-			if (!file_exists("{$temp}/.env")) {
+			if (!self::$app_root) {
 				exit(Response::replyCode(503));
 			}
-			self::$app_root = $temp;
 		}
 		if (empty($path)) {
 			return self::$app_root;
@@ -143,26 +133,40 @@ class RestInPeace {
 	 * Retrieves all records from the specified table.
 	 *
 	 * @param string $table The name of the table to retrieve records from.
-	 * @param string $suffix The suffix to append to the method name for generating the route.
-	 * @return array An array containing all the records from the specified table.
+	 * @return Query An array containing all the records from the specified table.
 	 */
-	static function getAll(string $table = '', string $suffix = "index") {
-		$schema = self::getSchema();
-		if (!isset($schema['tables'][$table])) {
-			return Response::replyCode(404);
-		}
-		self::connect();
-		$table = Table::from($schema['tables'][$table], self::$db);
-		$result = $table->all($suffix, ['id' => 1, 'limit' => 10, 'offset' => 0, 'by' => 'id', 'order' => 'ASC']);
+	static function query($table) {
+		return new Query($table);
+		// $schema = self::getSchema();
+		// if (!isset($schema['tables'][$table])) {
+		// 	return Response::replyCode(404);
+		// }
+		// self::connect();
+		// $table = Table::from($schema['tables'][$table], self::$db);
+		// $result = $table->all($suffix, ['id' => 1, 'limit' => 10, 'offset' => 0, 'by' => 'id', 'order' => 'ASC']);
 		////
 		// Adding HATEOAS
 		// $table->addHateoasArray($result);
 
+		// $result = [
+		// 	"count" => count($result),
+		// 	"url" => $table->getUrl(),
+		// 	"results" => $result,
+		// ];
+		// return $result;
+	}
+	static function url(...$args) {
 		$result = [
-			"count" => count($result),
-			"url" => $table->getUrl(),
-			"results" => $result,
+			($_SERVER['REQUEST_SCHEME'] ?? 'http') . ':/',
+			$_SERVER['HTTP_HOST'],
 		];
+		if (!empty($_SERVER['PATH_INFO'])) {
+			$uri = substr($_SERVER['REQUEST_URI'], 1);
+			$uri = substr($uri, 0, -strlen($_SERVER['PATH_INFO']));
+			$result[] = $uri;
+		}
+		array_push($result, ...$args);
+		$result = implode("/", $result);
 		return $result;
 	}
 
@@ -175,19 +179,21 @@ class RestInPeace {
 	 * @return mixed The retrieved record, or a 404 response if the table does not exist.
 	 */
 	static function getOne($table, $id, $suffix = "index") {
-		$schema = self::getSchema();
+		$modelClass = Model::findModel($table);
+		$result = $modelClass::find($id)->fetchWith();
+		return $result;
 
-		if (!isset($schema['tables'][$table])) {
-			return Response::replyCode(404);
-		}
-		self::connect();
-		$table = Table::from($schema['tables'][$table], self::$db);
-		$result = $table->find($id, $suffix)[0];
+		// $schema = self::getSchema();
+
+		// if (!isset($schema['tables'][$table])) {
+		// 	return Response::replyCode(404);
+		// }
+		// self::connect();
+		// $table = Table::from($schema['tables'][$table], self::$db);
+		// $result = $table->find($id, $suffix)[0];
 
 		// Adding HATEOAS
 		// $table->addHateoasArray($result);
-
-		return $result;
 	}
 
 	/**
@@ -207,8 +213,13 @@ class RestInPeace {
 	}
 	static function update($table, $id, $data = null) {
 		$data = $data ?? $_POST;
-		$table = self::getSchemaTable($table);
-		if (!$table) {
+		// $tableObj = self::getSchemaTable($table);
+		// if (!$table) {
+		// 	return Response::replyCode(404);
+		// }
+		// var_dump($tableObj);die;
+		$className = __NAMESPACE__ . "\\Models\\" . ucfirst($table);
+		if (!class_exists($className)) {
 			return Response::replyCode(404);
 		}
 		if (empty($id)) {
@@ -217,8 +228,7 @@ class RestInPeace {
 		if (!empty($data['id']) && $id !== $data['id']) {
 			throw new \Exception("Error Processing Request", 1);
 		}
-		$model = new Model($table, $id);
-		$model->fetch();
+		$model = $className::get($id);
 		$model->fill($data);
 		$model->save();
 		return [
@@ -289,9 +299,9 @@ class RestInPeace {
 	/**
 	 * Connects to the database.
 	 *
-	 * @return \PDO The database connection.
+	 * @return Database The database connection.
 	 */
-	protected static function connect() {
+	public static function connect() {
 		if (!empty(self::$db)) {
 			return self::$db;
 		}
@@ -320,10 +330,11 @@ class RestInPeace {
 			$filename = sprintf("schema.%s.php", basename(Config::get('DB_DATABASE', 'schema')));
 			$schema = config::load($filename, true);
 			if ($schema === false) {
+				// vdd($schema);
 				$schema = self::analyseDb();
 				$schema['updated_at'] = time();
 				// Config::output($filename, $schema);
-				Config::outputModels($schema);
+				// Config::outputModels($schema);
 			} else {
 				$schema['tables'] = array_map(fn($table) => Table::from($table, self::$db), $schema['tables'] ?? []);
 				$schema['views'] = array_map(fn($view) => View::from($view, self::$db), $schema['views'] ?? []);

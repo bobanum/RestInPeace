@@ -47,6 +47,9 @@ class BelongsTo extends Relation {
 		}
 	}
 	public function fetchWith($model, $with = []) {
+		if (empty($model)) {
+			return $this;
+		}
 		$model->fetchWith($with);
 		return $this;
 	}

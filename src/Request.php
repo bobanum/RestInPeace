@@ -24,7 +24,7 @@ class Request {
 		'#ALPHA' => '[A-Z]+',
 		'#Alpha' => '[A-Za-z]+',
 		'#alphanum' => '[a-zA-Z0-9]+',
-		'#slug' => '[a-z0-9_\.\~\-]+',
+		'#slug' => '[a-z_\.\~\-][a-z0-9_\.\~\-]*',
 	];
 	/**
 	 * Retrieve a value from the request using the specified key.

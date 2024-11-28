@@ -154,7 +154,7 @@ class TableOrView {
      *                      If false, the columns will be returned as an array. Default is true.
      * @return string|array The columns of the table or view, either as a comma-separated string or an array.
      */
-    public static function getCols($implode = true) {
+    public static function getCols0($implode = true) {
         if (!isset($_GET['cols'])) {
             return "*";
         }
@@ -174,7 +174,7 @@ class TableOrView {
      * @param array $query The query array to which parameters will be added. Passed by reference.
      * @param mixed $source The source from which parameters will be extracted and added to the query array.
      */
-    static function addParams(&$query = [], $source = null) {
+    static function addParams0(&$query = [], $source = null) {
         $source = $source ?? $_GET;
         if (isset($source['by'])) {
             if (!isset($source['order'])) {
@@ -200,43 +200,43 @@ class TableOrView {
      * @param array $params Optional parameters to include in the request.
      * @return mixed The result of the query.
      */
-    function all($suffix = "index", $params = []) {
-        $query = [];
-        if (isset($this->views[$suffix])) {
-            $tableName = $this->views[$suffix]->name;
-        } else {
-            $tableName = $this->name;
-        }
-        $cols = self::getCols();
+    // function all0($suffix = "index", $params = []) {
+    //     $query = [];
+    //     if (isset($this->views[$suffix])) {
+    //         $tableName = $this->views[$suffix]->name;
+    //     } else {
+    //         $tableName = $this->name;
+    //     }
+    //     $cols = self::getCols();
 
-        $query['SELECT'] = [
-            sprintf('%s FROM `%s`', $cols, $tableName),
-        ];
-        self::addParams($query, $params);
-        self::addParams($query);
-        $result = $this->database->execute($query);
+    //     $query['SELECT'] = [
+    //         sprintf('%s FROM `%s`', $cols, $tableName),
+    //     ];
+    //     self::addParams($query, $params);
+    //     self::addParams($query);
+    //     $result = $this->database->execute($query);
 
-        if ($result === false) {
-            return Response::replyCode(404);
-        }
+    //     if ($result === false) {
+    //         return Response::replyCode(404);
+    //     }
 
-        // if (empty($result)) {
-        // 	return Response::replyCode(204);
-        // }
-        return $result;
-    }
+    //     // if (empty($result)) {
+    //     // 	return Response::replyCode(204);
+    //     // }
+    //     return $result;
+    // }
     /**
      * Executes a function with the provided arguments.
      *
      * @param mixed $args The arguments to pass to the function.
      * @return mixed The result of the function execution.
      */
-    function execute($query, $data) {
-        $class= __NAMESPACE__ . '\\Models\\'. ucfirst($this->name);
-        $result = $this->database->executeClass($class, $query, $data);
-		array_walk($result, fn(&$model) => $model->table = $this);
-        return $result;
-    }
+    // function execute($query, $data) {
+    //     $class= __NAMESPACE__ . '\\Models\\'. ucfirst($this->name);
+    //     $result = $this->database->executeClass($class, $query, $data);
+	// 	array_walk($result, fn(&$model) => $model->table = $this);
+    //     return $result;
+    // }
     /**
      * Finds a record by its ID.
      *
@@ -244,34 +244,56 @@ class TableOrView {
      * @param string $suffix Optional. The suffix to use. Default is "index".
      * @return mixed The found record, or null if no record is found.
      */
-    function find($id, $suffix = "index") {
-        $query = [];
-        if (isset($this->views[$suffix])) {
-            $tableName = $this->views[$suffix]->name;
-        } else {
-            $tableName = $this->name;
-        }
-        $cols = self::getCols();
+    // function find00($id, $suffix = "index") {
+    //     if (isset($this->views[$suffix])) {
+    //         $tableName = $this->views[$suffix]->name;
+    //     } else {
+    //         $tableName = $this->name;
+    //     }
+    //     $query = new Query($tableName);
+    //     $query->select(self::getCols());
+    //     $query->where($this->primary_key, $id);
 
-        $query['SELECT'] = sprintf('%s FROM `%s`', $cols, $tableName);
-        $query['WHERE'] = sprintf('`%s` = ?', $this->primary_key);
+    //     // self::addParams($query); // TODO: Fix this
+    //     $result = $query->first();
+    //     if ($result === false) {
+    //         return Response::replyCode(404);
+    //     }
+    //     if (!empty($result->with)) {
+    //         $result->fetchWith();
+    //     }
+    //     // if (empty($result)) {
+    //     // 	return Response::replyCode(204);
+    //     // }
+    //     return $result;
+    // }
+    // function find0($id, $suffix = "index") {
+    //     $query = [];
+    //     if (isset($this->views[$suffix])) {
+    //         $tableName = $this->views[$suffix]->name;
+    //     } else {
+    //         $tableName = $this->name;
+    //     }
+    //     $cols = self::getCols();
 
-        self::addParams($query);
-        $result = $this->execute($query, [$id]);
-        
-        if ($result === false) {
-            return Response::replyCode(404);
-        }
-        $model = $result[0];
-        $model->table = $this;
-        if (!empty($model->with)) {
-            $model->fetchWith();
-        }
-        // if (empty($result)) {
-        // 	return Response::replyCode(204);
-        // }
-        return $result;
-    }
+    //     $query['SELECT'] = sprintf('%s FROM `%s`', $cols, $tableName);
+    //     $query['WHERE'] = sprintf('`%s` = ?', $this->primary_key);
+
+    //     self::addParams($query);
+    //     $result = $this->execute($query, [$id]);
+    //     if ($result === false) {
+    //         return Response::replyCode(404);
+    //     }
+    //     $model = $result[0];
+    //     $model->table = $this;
+    //     if (!empty($model->with)) {
+    //         $model->fetchWith();
+    //     }
+    //     // if (empty($result)) {
+    //     // 	return Response::replyCode(204);
+    //     // }
+    //     return $result;
+    // }
     /**
      * Establishes a relationship between the current entity and a related entity.
      *
@@ -281,36 +303,36 @@ class TableOrView {
      *
      * @return mixed The result of the relationship operation.
      */
-    function related($related, $id, $suffix = "index") {
-        if (!isset($this->relations[$related])) {
-            return Response::replyCode(404);
-        }
-        $relation = $this->relations[$related];
-        $related = RestInPeace::getSchemaTable($relation->foreign_table);
-        $realRelated = $related;
-        if (isset($related->views[$suffix])) {
-            $related = $related->views[$suffix];
-        }
+    // function related0($related, $id, $suffix = "index") {
+    //     if (!isset($this->relations[$related])) {
+    //         return Response::replyCode(404);
+    //     }
+    //     $relation = $this->relations[$related];
+    //     $related = RestInPeace::getSchemaTable($relation->foreign_table);
+    //     $realRelated = $related;
+    //     if (isset($related->views[$suffix])) {
+    //         $related = $related->views[$suffix];
+    //     }
 
-        $query = [];
-        $query[] = $relation->getSelect();
-        $this->addParams($query);
-        $result = $this->database->execute($query, [$id]);
+    //     $query = [];
+    //     $query[] = $relation->getSelect();
+    //     $this->addParams($query);
+    //     $result = $this->database->execute($query, [$id]);
 
-        if ($result === false) {
-            return Response::replyCode(404);
-        }
-        // if (empty($result)) {
-        // 	return Response::replyCode(204);
-        // }
-        // if ($relation->type === Relation::BELONGS_TO) {
-        //     $result = $result[0];
-        //     $realRelated->addHateoas($result);
-        // } else {
-        //     $realRelated->addHateoasArray($result);
-        // }
-        return $result;
-    }
+    //     if ($result === false) {
+    //         return Response::replyCode(404);
+    //     }
+    //     // if (empty($result)) {
+    //     // 	return Response::replyCode(204);
+    //     // }
+    //     // if ($relation->type === Relation::BELONGS_TO) {
+    //     //     $result = $result[0];
+    //     //     $realRelated->addHateoas($result);
+    //     // } else {
+    //     //     $realRelated->addHateoasArray($result);
+    //     // }
+    //     return $result;
+    // }
 
     /**
      * Creates an instance of the class from the given configuration.

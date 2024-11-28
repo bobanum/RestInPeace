@@ -25,7 +25,7 @@ trait ModelOutputTrait {
         }
         $attributes = implode("\n", $attributes);
         $result = <<<"EOD"
-            public \$attributes = [
+        public \$attributes = [
         {$attributes}
             ];
         EOD;
@@ -35,6 +35,7 @@ trait ModelOutputTrait {
         $modelName = ucfirst($this->name);
         $tableName = $this->name;
         $attributes = $this->attributesOutput();
+        $pk = $this->pkOutput();
         $relations = $this->relationsOutput();
         $output = <<<"EOD"
         <?php
@@ -47,9 +48,21 @@ trait ModelOutputTrait {
         use RestInPeace\\Model;
         class {$modelName} extends Model {
             use Traits\\{$modelName}Trait;
-        {$attributes}
+            protected static \$tableName = '{$tableName}';
+            {$pk}
+            {$attributes}
+
         {$relations}
         }
+        EOD;
+        return $output;
+    }
+    function PkOutput() {
+        $pks = array_filter($this->columns, fn ($column) => $column['pk'] != 0);
+        $pks = array_keys($pks);
+        $pks = "['".implode("','", $pks)."']";
+        $output = <<<"EOD"
+        protected static \$primaryKeys = {$pks};
         EOD;
         return $output;
     }

@@ -15,6 +15,7 @@ use RestInPeace\RestInPeace as RIP;
 class Config {
 	/** @var array $attributes Static array to hold attribute configurations */
 	static $attributes = [];
+	static $_env_path = '';
 	/**
 	 * Retrieves a configuration value based on the provided key.
 	 *
@@ -60,9 +61,42 @@ class Config {
 	 * @return void
 	 */
 	static function init() {
-		$dotenv = Dotenv::createImmutable(RIP::app_path());
+		$dotenv = Dotenv::createImmutable(self::env_path());
 		$dotenv->load();
 		return;
+	}
+	static function env_path($path = "") {
+		if (empty(self::$_env_path)) {
+			// 1) Check if the .env file is in the same directory as the script
+			// 2) Check if the .env file is in the same directory as RIP
+			// 3) Check if the .env file is in the same directory as vendor (in case RIP is a soft link in vendor)
+			self::$_env_path = self::findEnvDir($_SERVER['DOCUMENT_ROOT'], __DIR__, self::findVendorDir());
+		}
+		if ($path) {
+			return self::$_env_path . '/' . $path;
+		}
+		return self::$_env_path;
+	}
+	static function findVendorDir() {
+		foreach (debug_backtrace() as $trace) {
+			if (preg_match('~[\/\\\]vendor[\/\\\]~', $trace['file'])) {
+				return dirname($trace['file']);
+			}
+		}
+		return false;
+	}
+	static function findEnvDir(...$paths) {
+		foreach ($paths as $path) {
+			if (!$path) continue;
+			if (!is_dir($path)) {
+				$path = dirname($path);
+			}
+			while ($path && $path !== '/' && $path !== dirname($path)) {
+				if (file_exists($path . '/.env.local') || file_exists($path . '/.env')) return realpath($path);
+				$path = dirname($path);
+			}
+		}
+		return false;
 	}
 	/**
 	 * Returns the full path by appending the given path to a base path.
