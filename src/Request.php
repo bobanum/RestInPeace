@@ -16,6 +16,8 @@ class Request {
 	static $uri;
 	/** @var string[] $parts Static array to hold parts of the request */
 	static $parts = [];
+	/** @var array $params Static array to hold request parameters */
+	static $params = [];
 	/** @var array $placeholders Static array to hold placeholder values */
 	static $placeholders = [
 		'#any' => '[^/\?#]+',
@@ -47,7 +49,12 @@ class Request {
 	static function load() {
 		self::$method = self::getMethod();
 		$folder = substr($_SERVER['PHP_SELF'], 0, strrpos($_SERVER['PHP_SELF'], '/index.php'));
-		$uri = preg_replace('~/+$~', '', $_SERVER['REQUEST_URI']); // remove trailing slash
+		$uri = $_SERVER['REQUEST_URI'];
+		if ($_SERVER['QUERY_STRING']) {
+			parse_str($_SERVER['QUERY_STRING'], self::$params);
+			$uri = substr($uri, 0, -strlen($_SERVER['QUERY_STRING']) - 1);
+		}
+		$uri = preg_replace('~/+$~', '', $uri); // remove trailing slash
 		$uri = substr($uri, strlen($folder));
 		self::$uri = $uri;
 		return self::$uri;

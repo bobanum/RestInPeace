@@ -2,8 +2,8 @@
 
 namespace RestInPeace;
 
-use Error;
-
+use PDO;
+use PDOStatement;
 abstract class Database {
 	use HasAccessors;
 	/** @var string A regex pattern to match primary keys */
@@ -12,22 +12,22 @@ abstract class Database {
 	static protected $foreign_key_pattern = '^([a-z0-9_]+)_id$';	// A regex pattern to match primary keys
 	/** @var PDO $_pdo The PDO instance for database connection */
 	private $_pdo;
-	/** @var PDOStatements[] $statements An array to hold prepared SQL statements */
+	/** @var PDOStatement[] $statements An array to hold prepared SQL statements */
 	private $statements = [];
 	/** @var array $schema An array to store the database schema */
 	public $schema = [];
-	/** @var Tables[] $tables Stores the database tables information */
+	/** @var Table[] $tables Stores the database tables information */
 	private $tables = [];
 	/** @var View[] $views An array to store view data */
 	public $views = [];
 	/** @var array $connectionOptions Options for database connection */
 	public static $connectionOptions = [
-		\PDO::ATTR_CASE => \PDO::CASE_NATURAL,
-		\PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
-		\PDO::ATTR_EMULATE_PREPARES => false,
-		\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-		\PDO::ATTR_ORACLE_NULLS => \PDO::NULL_NATURAL,
-		\PDO::ATTR_STRINGIFY_FETCHES => false,
+		PDO::ATTR_CASE => PDO::CASE_NATURAL,
+		PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+		PDO::ATTR_EMULATE_PREPARES => false,
+		PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+		PDO::ATTR_ORACLE_NULLS => PDO::NULL_NATURAL,
+		PDO::ATTR_STRINGIFY_FETCHES => false,
 	];
 	/**
 	 * Constructor for the Database class.
@@ -74,7 +74,7 @@ abstract class Database {
 			if ($key === 'WHERE') {
 				return $key . ' ' . self::normalizeWhere($item);
 			}
-			if (is_array($item)) {
+			if (is_iterable($item)) {
 				$item = implode(',', $item);
 			}
 			return $key . ' ' . $item;
@@ -128,7 +128,7 @@ abstract class Database {
 		$tables = $this->getTables();
 		/** @var View[] $views */
 		$views = $this->getViews();
-		// vdd($tables, $views);
+
 		foreach ($tables as $table) {
 			if (empty($views)) break;	// If we just removed the last view
 			$table->processSuffixedViews($views);
@@ -157,7 +157,6 @@ abstract class Database {
 				if ($rel1->foreign_table->get_foreign_key() !== $rel1->foreign_key) continue;
 				foreach ($relBT as $rel2) {
 					if ($rel2->foreign_table->get_foreign_key() !== $rel2->foreign_key) continue;
-					// var_dump($table->name, $rel1->foreign_table->name, $rel2->foreign_table->name, $rel1->foreign_key);
 					$rel1->foreign_table->addRelation(new Relation\BelongsToMany($rel1->foreign_table, $rel2->foreign_table, $table));
 					$rel2->foreign_table->addRelation(new Relation\BelongsToMany($rel2->foreign_table, $rel1->foreign_table, $table));
 				}
@@ -179,7 +178,7 @@ abstract class Database {
 	 * Prepares an SQL statement for execution.
 	 *
 	 * @param string $query The SQL query to be prepared.
-	 * @return \PDOStatement The prepared statement object.
+	 * @return PDOStatement The prepared statement object.
 	 */
 	public function prepare($query) {
 		return $this->pdo->prepare($query);
@@ -229,62 +228,20 @@ abstract class Database {
 			vd($query);
 			throw new \Exception($exception->getMessage());
 
-			vdj($exception->getMessage(), $query, $data);
+			// vdj($exception->getMessage(), $query, $data);
 			// return ['status' => 'error', 'message' => $exception->getMessage()];
 		}
 	}
-	// public function executeClass($class, $query, $data) {
-	// 	if (!is_countable($data)) {
-	// 		$data = [$data];
-	// 	}
-	// 	$query = $this->normalizeQuery($query);
-	// 	try {
-	// 		$statement = $this->prepare($query);
 
-	// 		$statement->setFetchMode(\PDO::FETCH_CLASS, $class);
-	// 		if (count($data, COUNT_RECURSIVE) > count($data)) {
-	// 			$data = iterator_to_array(new \RecursiveIteratorIterator(new \RecursiveArrayIterator($data)), false);
-	// 		}
-
-	// 		if ($statement->execute($data) === true) {
-	// 			$sequence = null;
-
-	// 			switch (strstr($query, ' ', true)) {
-	// 				case 'INSERT':
-	// 				case 'REPLACE':
-	// 					return $this->pdo->lastInsertId($sequence);
-
-	// 				case 'UPDATE':
-	// 				case 'DELETE':
-	// 					return $statement->rowCount();
-
-	// 				case 'SELECT':
-	// 				case 'EXPLAIN':
-	// 				case 'PRAGMA':
-	// 				case 'SHOW':
-	// 					return self::fetch($statement);
-	// 			}
-	// 			return true;
-	// 		}
-	// 	} catch (\Exception $exception) {
-	// 		vdd($query, $data);
-	// 		throw new \Exception($exception->getMessage());
-
-	// 		vdj($exception->getMessage(), $query, $data);
-	// 		// return ['status' => 'error', 'message' => $exception->getMessage()];
-	// 	}
-	// }
 	/**
 	 * Fetches the result from a given statement.
 	 *
-	 * @param \PDOStatement $stmt The prepared statement to fetch the result from.
+	 * @param PDOStatement $stmt The prepared statement to fetch the result from.
 	 * @return mixed The fetched result, typically an array or false if no result.
 	 */
-	public static function fetch(\PDOStatement $stmt) {
-		$result = $stmt->fetchAll();
-		if (count($result) === 0) {
-			return $result;
-		}
+	public static function fetch(PDOStatement $stmt) {
+		$result = new Collection();
+		$result->add(...$stmt->fetchAll());
 		// foreach (array_keys($result[0]) as $idx => $name) {
 		// 	$meta = $stmt->getColumnMeta($idx);
 		// 	if (isset($meta['sqlite:decl_type'])) {

@@ -7,10 +7,12 @@ class Query {
 	public $modelClass;
 	public $_columns = ['*'];
 	public $_where = [];
+	public $_whereCombine = 0;	// 0 = AND, 1 = OR
 	public $_limit;
 	public $_offset;
 	public $_orderBy = [];
 	public $_data = [];
+	public $_join = [];
 	public function __construct($table) {
 		if (is_object($table)) {
 			$this->modelClass = get_class($table);
@@ -24,6 +26,9 @@ class Query {
 		}
 	}
 	public function __toString() {
+		return $this->normalizeQuery($this->toArray());
+	}
+	public function normalize() {
 		return $this->normalizeQuery($this->toArray());
 	}
 	/**
@@ -43,9 +48,9 @@ class Query {
 				return $item;
 			}
 			if ($key === 'WHERE') {
-				return $key . ' ' . self::normalizeWhere($item);
+				return $key . ' ' . self::normalizeWhere($item, $this->_whereCombine);
 			}
-			if (is_array($item)) {
+			if (is_iterable($item)) {
 				$item = implode(',', $item);
 			}
 			return $key . ' ' . $item;
@@ -93,12 +98,16 @@ class Query {
 		}
 		return implode(', ', $result);
 	}
+	static public function normalizeJoin($join) {
+		return implode(' ', $join);
+	}
 	public function toArray() {
 		$result = [];
 		$result['SELECT'] = $this->normalizeColumns($this->_columns);
 		$result['FROM'] = "`{$this->table}`";
+		$result[] = $this->normalizeJoin($this->_join);
 		if (!empty($this->_where)) {
-			$result['WHERE'] = $this->normalizeWhere($this->_where);
+			$result['WHERE'] = $this->normalizeWhere($this->_where, $this->_whereCombine);
 		}
 		if (!empty($this->_orderBy)) {
 			$result['ORDER BY'] = $this->normalizeOrderBy($this->_orderBy);
@@ -121,7 +130,7 @@ class Query {
 		$this->_columns = $columns;
 		return $this;
 	}
-	public function where($column, $value, $operator = '=') {
+	public function addWhere($column, $value, $operator = '=') {
 		if ($value instanceof Query) {
 			foreach ($value->_data as $key => $val) {
 				$this->_data[$key] = $val;
@@ -133,6 +142,25 @@ class Query {
 			$this->_where[] = "`$column` $operator :{$column}";
 		}
 		return $this;
+	}
+	public function where($column, $value, $operator = '=') {
+		if ($this->_whereCombine === 1) {
+			$this->_whereCombine = 0;
+			if (count($this->_where) > 1) {
+				$this->_where = [$this->_where];
+			}
+		}
+		
+		return $this->addWhere($column, $value, $operator);
+	}
+	public function orWhere($column, $value, $operator = '=') {
+		if ($this->_whereCombine === 0) {
+			$this->_whereCombine = 1;
+			if (count($this->_where) > 1) {
+				$this->_where = [$this->_where];
+			}
+		}
+		return $this->addWhere($column, $value, $operator);
 	}
 	public function limit($limit) {
 		$this->_limit = $limit;
@@ -152,6 +180,11 @@ class Query {
 		}
 		return $this->execute();
 	}
+	function join($table, $fk, $lk = "id") {
+		$this->_join[] = "INNER JOIN `{$table}` ON `{$this->table}`.`$fk` = `{$table}`.`$lk`";
+		return $this;
+	}
+
 	/**
 	 * Adds parameters to the query array.
 	 *
@@ -159,10 +192,10 @@ class Query {
 	 *
 	 * @param array $query The query array to which the parameters will be added.
 	 * @param mixed $source The source of the parameters. This can be an array, an object, or null.
-	 * @return void
+	 * @return 
 	 */
 	function addParams($source = null) {
-		$source = $source ?? $_GET;
+		$source ??= $_GET;
 		if (isset($source['by'])) {
 			if (isset($source['order'])) {
 				$this->orderBy($source['by'], $source['order']);
@@ -205,9 +238,16 @@ class Query {
 	public function first() {
 		$this->limit(1);
 		$result = $this->execute();
-		// $db = RestInPeace::connect();
-		// $result = $db->executeClass($this->modelClass, "$this", $this->_data);
 		return $result[0] ?? null;
+	}
+	public function firstOrCreate($data) {
+		$record = $this->first();
+		if ($record) {
+			return $record;
+		}
+		$m = $this->modelClass;
+		$u = (new $m())->fill($data);
+		return $u->save();
 	}
 	public function last() {
 		$this->offset("(select count(*)-1 from `{$this->table}`)");
@@ -253,7 +293,7 @@ class Query {
 			vdd($query, $data);
 			throw new \Exception($exception->getMessage());
 
-			vdj($exception->getMessage(), $query, $data);
+			// vdj($exception->getMessage(), $query, $data);
 			// return ['status' => 'error', 'message' => $exception->getMessage()];
 		}
 	}

@@ -104,7 +104,8 @@ class DatabaseSqlite extends Database {
 	public function getTables() {
 		$query = "SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name";
 		$tableSchemas = $this->execute($query);
-		$tableNames = array_map(fn($item) => $item['name'], $tableSchemas);
+		// vdd($tableSchemas); // TODO Use pluck
+		$tableNames = $tableSchemas->pluck('name');
 		$tables = array_map(function ($tableName) {
 			$table = new Table($this, $tableName);
 			$table->columns = $this->getColumns($tableName);
@@ -129,7 +130,7 @@ class DatabaseSqlite extends Database {
 		//NOT TESTED RECENTLY
 		$query = "SELECT name FROM sqlite_master WHERE type = 'view' ORDER BY name";
 		$viewSchemas = $this->execute($query);
-		$viewNames = array_map(fn($schema) => $schema['name'], $viewSchemas);
+		$viewNames = $viewSchemas->pluck('name');
 		$views = array_map(function($viewName) {
 			$view = new View($this, $viewName);
 			$view->columns = $this->getColumns($view->name);
@@ -163,14 +164,11 @@ class DatabaseSqlite extends Database {
 		} else {
 			$columns = $table->columns;
 		}
-		$pk = array_filter($columns, fn($column) => $column['pk'] === 1);
+		$pk = $columns->filter(fn($column) => $column['pk'] === 1);
 		if (empty($pk)) {
-			$pk = array_filter($columns, fn($column) => preg_match("~".self::$primary_key_pattern."~", $column['name']));
+			$pk = $columns->filter(fn($column) => preg_match("~".self::$primary_key_pattern."~", $column['name']));
 		}
-		$pk = array_map(function ($column) {
-			return $column['name'];
-		}, $pk);
-		
+		$pk = array_map(fn($column) => $column['name'], $pk);
 		return $pk;
 	}
 	/**
@@ -185,8 +183,8 @@ class DatabaseSqlite extends Database {
 		}
 		$query = "PRAGMA table_info(`{$table}`)";
 		$columns = $this->execute($query);
-		$names = array_map(fn($column) => $column['name'], $columns);
-		$columns = array_combine($names, $columns);
+		$names = $columns->pluck('name');
+		$columns = array_combine($names, [...$columns]);
 		return $columns;
 	}
 	/**

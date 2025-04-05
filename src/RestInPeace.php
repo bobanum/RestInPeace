@@ -1,7 +1,6 @@
 <?php
-
 namespace RestInPeace;
-
+use OAuth;
 /**
  * Represents the RestInPeace class.
  */
@@ -196,28 +195,9 @@ class RestInPeace {
 		// $table->addHateoasArray($result);
 	}
 
-	/**
-	 * Retrieves related data from the specified table based on the given ID and relationship.
-	 *
-	 * @param string $table The name of the table.
-	 * @param int $id The ID of the record.
-	 * @param string $related The relationship to retrieve data from.
-	 * @return mixed The related data, or a 404 response if the table does not exist.
-	 */
-	static function getRelated($table, $id, $related) {
-		$table = self::getSchemaTable($table);
-		if (!$table) {
-			return Response::replyCode(404);
-		}
-		return $table->related($related, $id);
-	}
-	static function update($table, $id, $data = null) {
+	static function update($table, $id = null, $data = null) {
 		$data = $data ?? $_POST;
-		// $tableObj = self::getSchemaTable($table);
-		// if (!$table) {
-		// 	return Response::replyCode(404);
-		// }
-		// var_dump($tableObj);die;
+		$id = $id ?? $data['id'];
 		$className = __NAMESPACE__ . "\\Models\\" . ucfirst($table);
 		if (!class_exists($className)) {
 			return Response::replyCode(404);
@@ -244,7 +224,8 @@ class RestInPeace {
 	 */
 	public static function analyseDb($db = null) {
 		$db = $db ?? self::connect();
-		return $db->analyse();
+		Config::outputModels($db->analyse());
+		return ['status' => 'success'];
 	}
 
 	/**
@@ -334,7 +315,7 @@ class RestInPeace {
 				$schema = self::analyseDb();
 				$schema['updated_at'] = time();
 				// Config::output($filename, $schema);
-				// Config::outputModels($schema);
+				Config::outputModels($schema);
 			} else {
 				$schema['tables'] = array_map(fn($table) => Table::from($table, self::$db), $schema['tables'] ?? []);
 				$schema['views'] = array_map(fn($view) => View::from($view, self::$db), $schema['views'] ?? []);
@@ -380,6 +361,7 @@ class RestInPeace {
 	 * @return bool Returns true if the table is visible, false otherwise.
 	 */
 	static public function isVisible($table) {
+		return true;
 		if (is_string($table)) {
 			$table = self::getSchemaTable($table);
 		}

@@ -12,6 +12,7 @@ trait ModelOutputTrait {
     function relationsOutput() {
         $relations = [];
         foreach ($this->relations as $relationName => $relation) {
+            vd($relationName);
             $type = ['has_one', 'belongs_to', 'has_many', 'belongs_to_many', 'belongs_to_through', 'has_many_through'][$relation->type];
             $relations[] = $relation->outputModel();
         }
@@ -25,7 +26,7 @@ trait ModelOutputTrait {
         }
         $attributes = implode("\n", $attributes);
         $result = <<<"EOD"
-        public \$attributes = [
+        public static \$_attributes = [
         {$attributes}
             ];
         EOD;
@@ -67,6 +68,7 @@ trait ModelOutputTrait {
         return $output;
     }
     function traitOutput() {
+        vd($this->name);
         $modelName = ucfirst($this->name);
         $output = <<<"EOD"
         <?php
