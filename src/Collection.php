@@ -45,10 +45,10 @@ class Collection implements \Countable, \Iterator, \ArrayAccess {
 	public function count(): int {
 		return count($this->items);
 	}
-	public function current(): mixed {
+	public function current() {
 		return current($this->items);
 	}
-	public function key(): mixed {
+	public function key() {
 		return key($this->items);
 	}
 	public function next(): void {
@@ -63,7 +63,7 @@ class Collection implements \Countable, \Iterator, \ArrayAccess {
 	public function offsetExists($offset): bool {
 		return isset($this->items[$offset]);
 	}
-	public function offsetGet($offset): mixed {
+	public function offsetGet($offset) {
 		return $this->items[$offset];
 	}
 	public function offsetSet($offset, $value): void {

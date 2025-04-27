@@ -12,7 +12,6 @@ trait ModelOutputTrait {
     function relationsOutput() {
         $relations = [];
         foreach ($this->relations as $relationName => $relation) {
-            vd($relationName);
             $type = ['has_one', 'belongs_to', 'has_many', 'belongs_to_many', 'belongs_to_through', 'has_many_through'][$relation->type];
             $relations[] = $relation->outputModel();
         }

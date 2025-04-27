@@ -36,7 +36,6 @@ class DatabaseSqlite extends Database {
 			\PDO::ATTR_TIMEOUT => 3,
 		] + $options;
 		$dbPath = $this->database;
-		
 		if (empty($dbPath)) {
 			throw new \Exception("Database not found");
 		}

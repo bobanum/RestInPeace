@@ -186,9 +186,13 @@ class Config {
 	}
 	public static function outputModels($data) {
 		// $filename = sprintf("schema.%s.php", basename(Config::get('DB_DATABASE', 'schema')));
+		var_dump(array_keys($data));
+
+		// vdd();
 		['tables' => $tables, 'views' => $views] = $data;
 		self::mkdir(RIP::app_path("models"));
 		self::mkdir(RIP::app_path("traits"));
+		// die;
 		foreach ($tables as $tableName => $table) {
 			$modelName = ucfirst($tableName);
 			$filename = RIP::app_path("models/{$modelName}.php");

@@ -224,6 +224,7 @@ class RestInPeace {
 	 */
 	public static function analyseDb($db = null) {
 		$db = $db ?? self::connect();
+		vd();
 		Config::outputModels($db->analyse());
 		return ['status' => 'success'];
 	}
@@ -315,6 +316,7 @@ class RestInPeace {
 				$schema = self::analyseDb();
 				$schema['updated_at'] = time();
 				// Config::output($filename, $schema);
+				vd();
 				Config::outputModels($schema);
 			} else {
 				$schema['tables'] = array_map(fn($table) => Table::from($table, self::$db), $schema['tables'] ?? []);

@@ -50,7 +50,7 @@ class Request {
 		self::$method = self::getMethod();
 		$folder = substr($_SERVER['PHP_SELF'], 0, strrpos($_SERVER['PHP_SELF'], '/index.php'));
 		$uri = $_SERVER['REQUEST_URI'];
-		if ($_SERVER['QUERY_STRING']) {
+		if (!empty($_SERVER['QUERY_STRING'])) {
 			parse_str($_SERVER['QUERY_STRING'], self::$params);
 			$uri = substr($uri, 0, -strlen($_SERVER['QUERY_STRING']) - 1);
 		}
