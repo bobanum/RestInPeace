@@ -26,40 +26,85 @@ class RestInPeace {
 	 * @return string The absolute path to the application directory.
 	 */
 	static public function app_path($path = "") {
+		if (self::isPathAbsolute($path)) {
+			return str_replace('\\', '/', realpath($path) ?: $path);
+		}
 		if (self::$app_root === null) {
-			self::$app_root = Config::get('APP_PATH', dirname($_SERVER['DOCUMENT_ROOT']));
-			// Testing for relative path
-			$temp = dirname($_SERVER['DOCUMENT_ROOT']) . "/" . self::$app_root;
-			if (file_exists($temp)) {
-				self::$app_root = $temp;
-			}
-			// Trying to find the .env file
-			$temp = self::$app_root;
-			while (file_exists($temp) && !file_exists("{$temp}/.env") && $temp !== dirname($temp)) {
-				$temp = dirname($temp);
-			}
+			// self::$app_root = Config::get('APP_PATH', dirname($_SERVER['DOCUMENT_ROOT']));
+			// // Testing for relative path
+			// $temp = realpath(dirname($_SERVER['DOCUMENT_ROOT']) . "/" . self::$app_root);
+			// if (file_exists($temp)) {
+			// 	self::$app_root = $temp;
+			// }
+			// // Trying to find the .env file
+			self::$app_root = self::findEnv();
 			// 503 error
-			if (!file_exists("{$temp}/.env")) {
+			if (!self::$app_root) {
 				exit(Response::replyCode(503));
 			}
-			self::$app_root = $temp;
+			self::$app_root = str_replace('\\', '/', self::$app_root);
 		}
 		if (empty($path)) {
 			return self::$app_root;
 		}
 		return self::$app_root . "/" . $path;
 	}
-
+	static public function findEnv($start = null) {
+		// Trying to find the .env file
+		if (empty($start)) {
+			return self::findEnv($_SERVER['DOCUMENT_ROOT']) 
+				?? self::findEnv(__DIR__);
+		}
+		$temp = $start;
+		while (file_exists($temp) && $temp !== dirname($temp)) {
+			if (file_exists("{$temp}/.env")) {
+				return $temp;
+			}
+			$temp = dirname($temp);
+		}
+		if (file_exists("{$temp}/.env")) {
+			return $temp;
+		}
+		return null;
+	}
 	/**
 	 * Returns the absolute path for the given database path.
 	 *
 	 * @param string $path The path to append to the database path.
 	 * @return string The absolute path.
 	 */
+	// static public function database_path($path = '') {
+	// 	return self::absolutePath(Config::get('DB_PATH', 'database'), $path);
+	// }
 	static public function database_path($path = '') {
-		return self::absolutePath(Config::get('DATABASE_PATH', 'database'), $path);
+		if (self::isPathAbsolute($path)) {
+			return str_replace('\\', '/', realpath($path) ?: $path);
+		}
+		$result = Config::get('DB_PATH');
+		if (empty($result)) {
+			$result = __DIR__;
+		} else if (self::isPathAbsolute($result)) {
+			$result = realpath($result) ?: $result;
+		} else {
+			$result = self::app_path($result);
+		}
+		if (!empty($path)) {
+			$result .= "/" . $path;
+		}
+		return str_replace('\\', '/', $result);
 	}
-
+	static public function isPathAbsolute($path) {
+		if (empty($path)) {
+			return false;
+		}
+		if (preg_match('~^[a-zA-Z]:\\\\~', $path) || preg_match('~^\\\\\\\\~', $path)) {
+			return true;
+		}
+		if (preg_match('~^/|^[a-zA-Z]+:~', $path)) {
+			return true;
+		}
+		return false;
+	}
 	/**
 	 * Returns the absolute path for the given config path.
 	 *

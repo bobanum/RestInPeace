@@ -3,7 +3,7 @@
 namespace RestInPeace;
 
 class DatabaseSqlite extends Database {
-	/** @var string $database The path to the SQLite database file */
+	/** @var array $database The path to the SQLite database file */
 	public $database;
 	/** @var string $username The username for the database connection */
 	public $username;
@@ -23,7 +23,14 @@ class DatabaseSqlite extends Database {
 	 * @param string $database The name of the SQLite database file. Default is 'db.sqlite'.
 	 */
 	public function __construct($database = 'db.sqlite') {
-		$this->database = RestInPeace::database_path($database);
+		$database = explode("|", trim($database));
+		$databaseNames = array_map(function($db) {
+			return basename(basename($db, '.sqlite'), '.db');
+		}, $database);
+		$databasePaths = array_map(function($db) {
+			return RestInPeace::database_path($db);
+		}, $database);
+		$this->database = array_combine($databaseNames, $databasePaths);
 	}
 	/**
 	 * Creates a new PDO instance with the given options.
@@ -35,7 +42,8 @@ class DatabaseSqlite extends Database {
 		$options = self::$connectionOptions + [
 			\PDO::ATTR_TIMEOUT => 3,
 		] + $options;
-		$dbPath = $this->database;
+		$dbs = $this->database;
+		$dbPath = array_shift($dbs);
 		
 		if (empty($dbPath)) {
 			throw new \Exception("Database not found");
@@ -84,6 +92,18 @@ class DatabaseSqlite extends Database {
 		foreach ($pragmas as $key => $value) {
 			$pdo->exec(sprintf('PRAGMA %s=%s;', $key, $value));
 		}
+		// Attach additional databases if specified
+		foreach ($dbs as $name => $dbPath) {
+			if (empty($dbPath)) {
+				continue;
+			}
+			$dbPath = RestInPeace::database_path($dbPath);
+			if (!file_exists($dbPath)) {
+				throw new \Exception("Database file not found: $dbPath");
+			}
+			$attachQuery = "ATTACH DATABASE '$dbPath' AS '$name'";
+			$pdo->exec($attachQuery);
+		}
 		return $pdo;
 	}
 	/**
@@ -101,8 +121,16 @@ class DatabaseSqlite extends Database {
 	 *
 	 * @return Table[] An array of Table objects
 	 */
-	public function getTables() {
-		$query = "SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name";
+	public function getTables($sub = null) {
+		if ($sub === null) {
+			$tables = array_map(function ($db) {
+				return $this->getTables($db);
+			}, ['main', ... array_slice(array_keys($this->database), 1)]);
+			return array_merge(...$tables);
+		}
+		$t = 'sqlite_master';
+		$t = $sub . '.sqlite_master';
+		$query = "SELECT name FROM {$t} WHERE type = 'table' ORDER BY name";
 		$tableSchemas = $this->execute($query);
 		$tableNames = array_map(fn($item) => $item['name'], $tableSchemas);
 		$tables = array_map(function ($tableName) {

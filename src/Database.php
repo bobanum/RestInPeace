@@ -160,6 +160,8 @@ abstract class Database {
 					$rel2->foreign_table->addRelation(new Relation\BelongsToMany($rel2->foreign_table, $rel1->foreign_table, $table));
 				}
 			}
+			// var_dump(array_keys($relBT), array_keys($tables), );break;
+			break;
 		}
 		return [
 			"tables" => $tables,
@@ -224,10 +226,10 @@ abstract class Database {
 				return true;
 			}
 		} catch (\Exception $exception) {
-			vdd($query);
-			throw new \Exception($exception->getMessage());
+			throw new \Exception($exception->getMessage(). 
+				"\nQuery: " . $query .
+				"\nData: " . json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 
-			vdj($exception->getMessage(), $query, $data);
 			// return ['status' => 'error', 'message' => $exception->getMessage()];
 		}
 	}
