@@ -134,7 +134,10 @@ abstract class Database {
 		// Reanalyse to complete foreign keys and foreign tables
 		foreach ($tables as $table) {
 			foreach ($table->foreign_keys as $fk) {
+				if (empty($fk['table']) || empty($fk['from'])) continue;
 				$foreignTable = $fk['table'];
+				if (empty($tables[$foreignTable])) continue;
+				
 				$table->addRelation(new Relation\BelongsTo($table, $tables[$foreignTable], $fk['from']));
 			}
 			// Check for unprocessed foreign keys
@@ -155,13 +158,10 @@ abstract class Database {
 				if ($rel1->foreign_table->get_foreign_key() !== $rel1->foreign_key) continue;
 				foreach ($relBT as $rel2) {
 					if ($rel2->foreign_table->get_foreign_key() !== $rel2->foreign_key) continue;
-					// var_dump($table->name, $rel1->foreign_table->name, $rel2->foreign_table->name, $rel1->foreign_key);
 					$rel1->foreign_table->addRelation(new Relation\BelongsToMany($rel1->foreign_table, $rel2->foreign_table, $table));
 					$rel2->foreign_table->addRelation(new Relation\BelongsToMany($rel2->foreign_table, $rel1->foreign_table, $table));
 				}
 			}
-			// var_dump(array_keys($relBT), array_keys($tables), );break;
-			break;
 		}
 		return [
 			"tables" => $tables,

@@ -128,6 +128,9 @@ class DatabaseSqlite extends Database {
 			}, ['main', ... array_slice(array_keys($this->database), 1)]);
 			return array_merge(...$tables);
 		}
+		if ($sub === 'oauth') {
+			return []; // Skip the oauth database
+		}
 		$t = 'sqlite_master';
 		$t = $sub . '.sqlite_master';
 		$query = "SELECT name FROM {$t} WHERE type = 'table' ORDER BY name";

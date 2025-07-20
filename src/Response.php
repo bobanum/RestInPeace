@@ -5,7 +5,7 @@ namespace RestInPeace;
 class Response {
 	static $json_options = ['UNESCAPED_SLASHES', 'UNESCAPED_UNICODE'];
 	static $headers = [
-		'Access-Control-Allow-Origin' => '*',
+		// 'Access-Control-Allow-Origin' => '*',
 		'Access-Control-Expose-Headers' => 'x-http-method-override',
 		'Access-Control-Allow-Methods' => 'GET, POST, OPTIONS, PUT, DELETE',
 		'Content-Type' => '%s; charset=utf-8',
@@ -125,6 +125,7 @@ class Response {
 
 		if (!headers_sent()) {
 			http_response_code($this->code);
+
 			self::headers(['Content-Type' => $this->contentType]);
 		}
 		exit($result);

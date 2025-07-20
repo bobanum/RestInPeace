@@ -6,6 +6,7 @@ namespace RestInPeace;
  * Represents the RestInPeace class.
  */
 class RestInPeace {
+	use Trait\Routes;
 	const SCHEMA_CACHE = 86400;
 	const CONFIG_PATH = ".";
 	public static $root = null;
@@ -52,7 +53,8 @@ class RestInPeace {
 	static public function findEnv($start = null) {
 		// Trying to find the .env file
 		if (empty($start)) {
-			return self::findEnv($_SERVER['DOCUMENT_ROOT']) 
+			return self::findEnv($_ENV['APP_PATH'])
+				?? self::findEnv($_SERVER['DOCUMENT_ROOT'])
 				?? self::findEnv(__DIR__);
 		}
 		$temp = $start;

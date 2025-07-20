@@ -46,10 +46,8 @@ class Request {
 	 */
 	static function load() {
 		self::$method = self::getMethod();
-		$folder = substr($_SERVER['PHP_SELF'], 0, strrpos($_SERVER['PHP_SELF'], '/index.php'));
-		$uri = preg_replace('~/+$~', '', $_SERVER['REQUEST_URI']); // remove trailing slash
-		$uri = substr($uri, strlen($folder));
-		self::$uri = $uri;
+		$uri = str_replace($_SERVER['SCRIPT_NAME'], '', $_SERVER['PHP_SELF']); // Get the folder path from the script name
+		self::$uri = $uri ?? '/';
 		return self::$uri;
 	}
 	/**
