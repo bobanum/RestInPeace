@@ -41,7 +41,7 @@ class RestInPeace {
 			self::$app_root = self::findEnv();
 			// 503 error
 			if (!self::$app_root) {
-				exit(Response::replyCode(503));
+				exit(Response::fromCode(503));
 			}
 			self::$app_root = str_replace('\\', '/', self::$app_root);
 		}
@@ -196,7 +196,7 @@ class RestInPeace {
 	static function getAll(string $table = '', string $suffix = "index") {
 		$schema = self::getSchema();
 		if (!isset($schema['tables'][$table])) {
-			return Response::replyCode(404);
+			return null;
 		}
 		self::connect();
 		$table = Table::from($schema['tables'][$table], self::$db);
@@ -224,9 +224,7 @@ class RestInPeace {
 	static function getOne($table, $id, $suffix = "index") {
 		$schema = self::getSchema();
 
-		if (!isset($schema['tables'][$table])) {
-			return Response::replyCode(404);
-		}
+		if (!isset($schema['tables'][$table])) return null;
 		self::connect();
 		$table = Table::from($schema['tables'][$table], self::$db);
 		$result = $table->find($id, $suffix)[0];
@@ -248,7 +246,7 @@ class RestInPeace {
 	static function getRelated($table, $id, $related) {
 		$table = self::getSchemaTable($table);
 		if (!$table) {
-			return Response::replyCode(404);
+			return Response::fromCode(404);
 		}
 		return $table->related($related, $id);
 	}
@@ -256,7 +254,7 @@ class RestInPeace {
 		$data = $data ?? $_POST;
 		$table = self::getSchemaTable($table);
 		if (!$table) {
-			return Response::replyCode(404);
+			return Response::fromCode(404);
 		}
 		if (empty($id)) {
 			$id = null;
@@ -296,7 +294,7 @@ class RestInPeace {
 		$clients = Config::get('CLIENTS', '');
 
 		if (!self::isAllowed($clients)) {
-			return Response::replyCode(403);
+			return Response::fromCode(403);
 		}
 		return true;
 	}
@@ -352,7 +350,7 @@ class RestInPeace {
 				throw new \Exception("Unknown Database Driver");
 			}
 		} catch (\Exception $exception) {
-			exit(Response::replyCode(503));
+			exit(Response::fromCode(503));
 		}
 		return self::$db;
 	}
@@ -452,7 +450,7 @@ class RestInPeace {
 		$pdo = self::connect();
 
 		if (!$pdo) {
-			Response::replyCode(503);
+			return Response::fromCode(503)->send();
 		}
 		$host = $_SERVER['HTTP_HOST'];
 		$protocol = $_SERVER['REQUEST_SCHEME'] ?? 'http';

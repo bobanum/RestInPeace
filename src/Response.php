@@ -4,11 +4,11 @@ namespace RestInPeace;
 
 class Response {
 	static $json_options = ['UNESCAPED_SLASHES', 'UNESCAPED_UNICODE'];
-	static $headers = [
-		// 'Access-Control-Allow-Origin' => '*',
+	static $default_headers = [
 		'Access-Control-Expose-Headers' => 'x-http-method-override',
 		'Access-Control-Allow-Methods' => 'GET, POST, OPTIONS, PUT, DELETE',
-		'Content-Type' => '%s; charset=utf-8',
+        'Access-Control-Allow-Credentials' => 'true', // Required for cookies
+		'Content-Type' => 'application/json; charset=utf-8',
 	];
 	public static $HTTP = [
 		200 => [
@@ -59,6 +59,9 @@ class Response {
 	public $content;
 	public $options;
 	public $contentType;
+	public $sent = false;
+	public $headers;
+	public $empty = false;
 	public function __construct($content = null, $code = null) {
 		$this->content = $content;
 		if (is_array($content) && array_key_exists('status', $content) && array_key_exists('code', $content)) {
@@ -68,6 +71,7 @@ class Response {
 
 		$this->contentType = 'application/json';
 		$this->options = self::$json_options;
+		$this->headers = self::$default_headers;
 	}
 	public function __get($name) {
 		$get_name = 'get_' . $name;
@@ -95,6 +99,12 @@ class Response {
 			$this->message = '';
 		}
 	}
+	public function header($name, $value) {
+		$name = explode('-', $name);
+		$name = array_map('ucfirst', $name);
+		$name = implode('-', $name);
+		$this->headers[$name] = $value;
+	}
 	public static function reply($data, $http_code = null) {
 		if ($data instanceof self) {
 			$result = $data;
@@ -107,28 +117,26 @@ class Response {
 
 		$result->send();
 	}
-	public static function replyCode($code, $message = null) {
-		$result = self::$HTTP[$code] ?? [
+	public static function fromCode($code, $message = null) : Response {
+		$content = self::$HTTP[$code] ?? [
 			'status' => 'Error',
 			'code' => $code,
 			'message' => 'Unknown',
 		];
 
-		$result = new self($result);
-		$result->send();
+		return new self($content, $code);
 	}
-	public function send() {
-
+	public function send($die = true) {
+		if ($this->empty) return;
 		$result = $this->toJson();
-
-		if ($result === false) return false;
-
+		
 		if (!headers_sent()) {
-			http_response_code($this->code);
-
-			self::headers(['Content-Type' => $this->contentType]);
+			$this->sendHeaders();
 		}
-		exit($result);
+		
+		if ($die) {
+			exit($result);
+		}
 	}
 
 	static public function json_encode($content = null, $options = []) {
@@ -154,17 +162,32 @@ class Response {
 		return self::json_encode($content, $options);
 	}
 
-	static function headers($data = []) {
-		foreach (self::$headers as $name => $val) {
-			if (array_key_exists($name, $data)) {
-				$datum = $data[$name];
-				if (!is_array($datum)) {
-					$datum = [$datum];
-				}
-				$val = sprintf($val, ...$datum);
-			}
-			$header = sprintf('%s: %s', $name, $val);
-			header($header);
+	public function sendHeaders() {
+		if ($this->sent) return;
+		$this->sent = true;
+
+		if (headers_sent()) return;
+
+		http_response_code($this->code);
+		if (empty($this->headers['Access-Control-Allow-Origin'])) {
+			$referer = rtrim($_SESSION['referer'] ?? $_SERVER['HTTP_REFERER'] ?? '*', '/');
+			$this->headers['Access-Control-Allow-Origin'] = $referer;
 		}
+		foreach ($this->headers as $name => $val) {
+			header("{$name}: {$val}");
+		}
+		return $this;
 	}
+	static public function empty() : Response {
+		$result = new self();
+		$result->empty = true;
+		return $result;
+	}
+	static public function redirect($location, $http_code = 302) {
+		$result = new self();
+		$result->header('Location', $location);
+		$result->code = $http_code;
+		return $result;
+	}
+
 }

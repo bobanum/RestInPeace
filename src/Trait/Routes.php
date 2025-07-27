@@ -2,15 +2,17 @@
 
 namespace RestInPeace\Trait;
 
+use RestInPeace\Response;
 use RestInPeace\RestInPeace as RIP;
 use RestInPeace\Router;
+
 /**
  * Represents the RestInPeace class.
  */
 trait Routes {
 	static public function baseRoutes() {
-		return self::route_home() ?:
-			self::route_table();
+		return self::route_home()
+			?: self::route_table();
 	}
 
 	static public function route_home() {
@@ -18,29 +20,32 @@ trait Routes {
 			$schema = RIP::getSchema();
 			$result = [];
 			foreach ($schema['tables'] as $table => $config) {
-				if (!RIP::isVisible($config)) {
-					continue;
+				if (RIP::isVisible($config)) {
+					$result['url_' . $table] = sprintf("%s/%s", RIP::$root, $table);
 				}
-				$result['url_' . $table] = sprintf("%s/%s", RIP::$root, $table);
 			}
-			return $result;
+			
+			return new Response($result);
 		});
 	}
 	static public function route_table() {
 		return Router::group('/#slug', function ($table) {
-			if (!RIP::isVisible($table)) return;
+			if (!RIP::isVisible($table)) return Response::fromCode(404);
 
 			return Router::get('/', function ($table) {
 				$result = RIP::getAll($table);
-				return $result;
+				if (!$result) return Response::fromCode(404);
+				return new Response($result);
 			}) ?: Router::group('/#num', function ($table, $id) {
 				$result = RIP::getOne($table, $id)[0];
+				if (!$result) return Response::fromCode(404);
+
 				return Router::get('/', function ($table, $id) use ($result) {
-					return $result;
+					return new Response($result);
 				}) ?: Router::get('/#slug', function ($table, $id, $slug) use ($result) {
 					$sub = RIP::getRelated($table, $id, $slug);
 					$result[$slug] = $sub;
-					return $result;
+					return new Response($result);
 				});
 			});
 		});

@@ -11,35 +11,38 @@ $response = Router::get('/', function () {
 		if (!RIP::isVisible($config)) {
 			continue;
 		}
-		$result['url_'.$table] = sprintf("%s/%s", RIP::$root, $table);
+		$result['url_' . $table] = sprintf("%s/%s", RIP::$root, $table);
 	}
 	return $result;
 }) ?:
-Router::group('/#slug', function ($table) {
-	if (!RIP::isVisible($table)) return;
+	Router::group('/#slug', function ($table) {
+		if (!RIP::isVisible($table)) return Response::empty();
 
-	return Router::get('/', function ($table) {
-		$result = RIP::getAll($table);
-		return $result;
-	}) ?:
-	
-	Router::group('/#num', function ($table, $id) {
-		$result = RIP::getOne($table, $id)[0];
-		return Router::get('/', function ($table, $id) use ($result) {
-			return $result;
-		}) ?:
-		Router::get('/#slug', function ($table, $id, $slug) use ($result) {
-			$sub = RIP::getRelated($table, $id, $slug);
-			$result[$slug] = $sub;
-			return $result;
-		});
-	});
-}) ?:
-Response::replyCode(404);
+		return
+			Router::get('/', function ($table) {
+				$result = RIP::getAll($table);
+				if (!$result) return Response::fromCode(404);
+				return new Response($result);
+			})
+			?: Router::group('/#num', function ($table, $id) {
+				$result = RIP::getOne($table, $id)[0];
+				if (!$result) return Response::fromCode(404);
+				return
+					Router::get('/', function ($table, $id) use ($result) {
+						return new Response($result);
+					})
+					?: Router::get('/#slug', function ($table, $id, $slug) use ($result) {
+						$sub = RIP::getRelated($table, $id, $slug);
+						$result[$slug] = $sub;
+						return new Response($result);
+					});
+			});
+	})
+	?: Response::fromCode(404);
 // Router::get('/#num/#alpha?', function ($id, $nom) {
 // 	return [$id, $nom];
 // });
 // Router::get('/#num', function ($code) {
 // 	return new Response(Response::$HTTP[$code]);
 // });
-Response::reply($response);
+$response->send();
