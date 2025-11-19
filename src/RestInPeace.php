@@ -53,9 +53,9 @@ class RestInPeace {
 	static public function findEnv($start = null) {
 		// Trying to find the .env file
 		if (empty($start)) {
-			return self::findEnv($_ENV['APP_PATH'])
-				?? self::findEnv($_SERVER['DOCUMENT_ROOT'])
-				?? self::findEnv(__DIR__);
+			return self::findEnv($_ENV['APP_PATH']
+				?? $_SERVER['DOCUMENT_ROOT']
+				?? __DIR__);
 		}
 		$temp = $start;
 		while (file_exists($temp) && $temp !== dirname($temp)) {
@@ -203,7 +203,7 @@ class RestInPeace {
 		$result = $table->all($suffix, ['id' => 1, 'limit' => 10, 'offset' => 0, 'by' => 'id', 'order' => 'ASC']);
 		////
 		// Adding HATEOAS
-		// $table->addHateoasArray($result);
+		$table->addHateoasArray($result);
 
 		$result = [
 			"count" => count($result),
@@ -227,10 +227,9 @@ class RestInPeace {
 		if (!isset($schema['tables'][$table])) return null;
 		self::connect();
 		$table = Table::from($schema['tables'][$table], self::$db);
-		$result = $table->find($id, $suffix)[0];
-
+		$result = $table->find($id, $suffix)[0]->attributes;
 		// Adding HATEOAS
-		// $table->addHateoasArray($result);
+		$table->addHateoas($result);
 
 		return $result;
 	}

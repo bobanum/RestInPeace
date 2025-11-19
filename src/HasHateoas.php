@@ -86,6 +86,7 @@ trait HasHateoas {
      * @param array $data The data to add links to.
      */
     public function addHateoas(&$data) {
+        vd($data);
         $id = $data['id'] ?? $this->id ?? null;
         $data['url'] = $this->getUrl($id); // TODO: use the right PK
     }

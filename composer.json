@@ -8,7 +8,9 @@
   },
   "autoload": {
     "psr-4": {
-      "RestInPeace\\": "src/"
+      "RestInPeace\\": "src/",
+      "RestInPeace\\Models\\": "../../models/",
+      "RestInPeace\\Models\\Traits\\": "../../traits/"
     }
   },
   "authors": [

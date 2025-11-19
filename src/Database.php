@@ -238,7 +238,6 @@ abstract class Database {
 		file_put_contents('query.sql', $query . "\n", FILE_APPEND);
 		try {
 			$statement = $this->prepare($query);
-
 			$statement->setFetchMode(\PDO::FETCH_CLASS, $class);
 			if (count($data, COUNT_RECURSIVE) > count($data)) {
 				$data = iterator_to_array(new \RecursiveIteratorIterator(new \RecursiveArrayIterator($data)), false);
