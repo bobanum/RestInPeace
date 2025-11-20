@@ -214,8 +214,8 @@ class TableOrView {
         ];
         self::addParams($query, $params);
         self::addParams($query);
-        $result = $this->database->execute($query);
-
+        $result = $this->execute($query);
+        // $result = $this->database->execute($query);
         if ($result === false) {
             return Response::replyCode(404);
         }
@@ -231,7 +231,7 @@ class TableOrView {
      * @param mixed $args The arguments to pass to the function.
      * @return mixed The result of the function execution.
      */
-    function execute($query, $data) {
+    function execute($query, $data = []) {
         $class= __NAMESPACE__ . '\\Models\\'. ucfirst($this->name);
         $result = $this->database->executeClass($class, $query, $data);
 		array_walk($result, fn(&$model) => $model->table = $this);
@@ -258,7 +258,6 @@ class TableOrView {
 
         self::addParams($query);
         $result = $this->execute($query, [$id]);
-        
         if ($result === false) {
             return Response::replyCode(404);
         }
@@ -270,8 +269,9 @@ class TableOrView {
         // if (empty($result)) {
         // 	return Response::replyCode(204);
         // }
-        return $result;
+        return $model;
     }
+
     /**
      * Establishes a relationship between the current entity and a related entity.
      *

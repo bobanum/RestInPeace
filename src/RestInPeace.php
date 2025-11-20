@@ -1,7 +1,8 @@
 <?php
 
 namespace RestInPeace;
-
+// header('Content-Type: application/json');
+// echo json_encode(debug_backtrace(), JSON_PRETTY_PRINT);
 /**
  * Represents the RestInPeace class.
  */
@@ -203,11 +204,11 @@ class RestInPeace {
 		$result = $table->all($suffix, ['id' => 1, 'limit' => 10, 'offset' => 0, 'by' => 'id', 'order' => 'ASC']);
 		////
 		// Adding HATEOAS
-		$table->addHateoasArray($result);
+		// $table->addHateoasArray($result);
 
 		$result = [
 			"count" => count($result),
-			"url" => $table->getUrl(),
+			"url_api" => $table->getUrl(),
 			"results" => $result,
 		];
 		return $result;
@@ -227,10 +228,7 @@ class RestInPeace {
 		if (!isset($schema['tables'][$table])) return null;
 		self::connect();
 		$table = Table::from($schema['tables'][$table], self::$db);
-		$result = $table->find($id, $suffix)[0]->attributes;
-		// Adding HATEOAS
-		$table->addHateoas($result);
-
+		$result = $table->find($id, $suffix);
 		return $result;
 	}
 
@@ -267,7 +265,7 @@ class RestInPeace {
 		$model->save();
 		return [
 			'status' => 'success',
-			'data' => $model->attributes
+			'data' => $model
 		];
 	}
 	/**
