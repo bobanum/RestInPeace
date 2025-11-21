@@ -21,11 +21,13 @@ $response = Router::get('/', function () {
 		return
 			Router::get('/', function ($table) {
 				$result = RIP::getAll($table);
+				vd($result);
 				if (!$result) return Response::fromCode(404);
 				return new Response($result);
 			})
 			?: Router::group('/#num', function ($table, $id) {
 				$result = RIP::getOne($table, $id)[0];
+				vd($result);
 				if (!$result) return Response::fromCode(404);
 				return
 					Router::get('/', function ($table, $id) use ($result) {

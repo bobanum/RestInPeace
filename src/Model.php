@@ -10,7 +10,7 @@ namespace RestInPeace;
  *
  * @package bobanum\restinpeace
  */
-class Model {
+class Model implements \JsonSerializable {
 	/**
 	 * @var array $excluded List of fields to be excluded.
 	 * 
@@ -31,6 +31,9 @@ class Model {
 	 */
 	function __construct($table = null, $id = null, $data = []) {
 		$this->table = $table;
+	}
+	public function jsonSerialize(): array {
+		return $this->toArray();
 	}
 	function fill($data) {
 		foreach ($data as $key => $value) {
@@ -218,7 +221,7 @@ class Model {
 	}
 	function hasManyThrough($table, $foreign_key) {
 	}
-	function toArray() {
+	function toArray($addHateoas = true) {
 		$excluded = [
 			...self::$excluded,
 			// ...array_values(array_map(fn($relation) => $relation->foreign_key, $this->table->relations)),
@@ -235,6 +238,9 @@ class Model {
 				$value = array_map(fn($v) => is_object($v) && method_exists($v, 'toArray') ? $v->toArray() : $v, $value);
 			}
 			$result[$key] = $value;
+		}
+		if ($addHateoas) {
+			$this->table->addHateoas($result);
 		}
 		return $result;
 	}

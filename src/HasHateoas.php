@@ -64,7 +64,7 @@ trait HasHateoas {
      */
     private function getRoot() {
         if (self::$root === null) {
-            self::$root = sprintf('%s://%s', $this->getRequestScheme(), $this->getHttpHost());
+            self::$root = sprintf('%s://%s%s', $this->getRequestScheme(), $this->getHttpHost(), $this->getApiDir());
         }
         return self::$root;
     }
@@ -87,7 +87,7 @@ trait HasHateoas {
      */
     public function addHateoas(&$data) {
         $id = $data['id'] ?? $this->id ?? null;
-        $data['url'] = $this->getUrl($id); // TODO: use the right PK
+        $data['url_api'] = $this->getUrl($id); // TODO: use the right PK
     }
     /**
      * Adds related HATEOAS (Hypermedia as the Engine of Application State) links to the provided data.
@@ -98,7 +98,7 @@ trait HasHateoas {
      */
     public function addRelatedHateoas($relation, &$data) {
         $id = $data['id'] ?? $this->id ?? null;
-        $data['url'] = $this->getUrlFor($relation->foreign_table, $id); // TODO: use the right PK
+        $data['url_api'] = $this->getUrlFor($relation->foreign_table, $id); // TODO: use the right PK
     }
 
     /**
@@ -153,5 +153,17 @@ trait HasHateoas {
      */
     private function getHttpHost() {
         return $_SERVER['HTTP_HOST'];
+    }
+    /**
+     * Get the HTTP host from the server.
+     *
+     * @return mixed The HTTP host.
+     */
+    private function getApiDir() {
+        $result = dirname($_SERVER['SCRIPT_NAME']);
+        if ($result === dirname('/')) {
+            $result = '';
+        }
+        return $result;
     }
 }
