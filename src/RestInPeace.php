@@ -83,7 +83,7 @@ class RestInPeace {
 		if (self::isPathAbsolute($path)) {
 			return str_replace('\\', '/', realpath($path) ?: $path);
 		}
-		$result = Config::get('DB_PATH');
+		$result = Config::get(['DB_PATH', 'DATABASE_PATH']);
 		if (empty($result)) {
 			$result = __DIR__;
 		} else if (self::isPathAbsolute($result)) {

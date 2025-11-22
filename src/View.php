@@ -1,4 +1,5 @@
 <?php
+
 namespace RestInPeace;
 //REVISE
 class View extends TableOrView {
@@ -7,6 +8,9 @@ class View extends TableOrView {
 			$this->table_name = $this->database->getTableName($this->name);
 		}
 		return $this->table_name;
+	}
+	public function refersTo($tableName) {
+		return $this->get_suffixe($tableName) != false;
 	}
 	public function get_suffixe($tableName = "") {
 		if (!empty($tableName)) {
@@ -23,7 +27,7 @@ class View extends TableOrView {
 			return $config;
 		}
 		$result = parent::from($config, $database);
-		
+
 		return $result;
 	}
 }

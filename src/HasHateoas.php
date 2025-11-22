@@ -31,6 +31,7 @@ trait HasHateoas {
      * @return string The constructed URL.
      */
     public function getUrl(...$parts) {
+        // print_r(array_map(fn($trace) => sprintf("%s::%s:%s", $trace['class'], $trace['function'], $trace['line']),  debug_backtrace()));
         return $this->getUrlFor($this->name, ...$parts);
     }
 

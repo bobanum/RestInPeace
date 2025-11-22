@@ -63,7 +63,7 @@ abstract class Database {
 	 * @param string[]|string $query The raw SQL query to be normalized.
 	 * @return string The normalized SQL query.
 	 */
-	public function normalizeQuery($query) {
+	public static function normalizeQuery($query) {
 		if (is_string($query)) return $query;
 		$query = array_map(function ($key, $item) {
 			if (is_numeric($key)) {
@@ -122,11 +122,10 @@ abstract class Database {
 	 * @return array An array containing the results of the analysis.
 	 */
 	public function analyse() {
-		/** @var Table[] $tables */
+		/** @var Collection $tables */
 		$tables = $this->getTables();
-		/** @var View[] $views */
+		/** @var Collection $views */
 		$views = $this->getViews();
-		// vdd($tables, $views);
 		foreach ($tables as $table) {
 			if (empty($views)) break;	// If we just removed the last view
 			$table->processSuffixedViews($views);
@@ -277,21 +276,9 @@ abstract class Database {
 	 * @param \PDOStatement $stmt The prepared statement to fetch the result from.
 	 * @return mixed The fetched result, typically an array or false if no result.
 	 */
-	public static function fetch(\PDOStatement $stmt) {
-		$result = $stmt->fetchAll();
-		if (count($result) === 0) {
-			return $result;
-		}
-		// foreach (array_keys($result[0]) as $idx => $name) {
-		// 	$meta = $stmt->getColumnMeta($idx);
-		// 	if (isset($meta['sqlite:decl_type'])) {
-		// 		if (preg_match("#int|dec|num|real|float|long|short|double|byte|timestamp#i", $meta['sqlite:decl_type'])) {
-		// 			for ($i = 0, $len = count($result); $i < $len; $i += 1) {
-		// 				$result[$i][$name] = floatval($result[$i][$name]);
-		// 			}
-		// 		}
-		// 	}
-		// }
+	public static function fetch(\PDOStatement $stmt): mixed {
+		$result = new Collection($stmt->fetchAll());
+		$result->attrToKeys('name');
 		return $result;
 	}
 }

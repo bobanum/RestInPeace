@@ -134,17 +134,11 @@ class TableOrView {
     /**
      * Processes the provided views by applying necessary suffixes.
      *
-     * @param View[] &$views An array of views to be processed. This parameter is passed by reference.
+     * @param Collection $views A collection of views to be processed.
      */
-    public function processSuffixedViews(&$views) {
-        $suffixes = array_map(fn($view) => $view->get_suffixe($this->name), $views);
-        $suffixes = array_filter($suffixes);
-        $table_views = array_flip($suffixes);
-        $table_views = array_map(fn($viewName) => $views[$viewName], $table_views);
-        if (Config::get('HIDE_SUFFIXED_VIEWS', true)) {
-            $views = array_diff_key($views, $suffixes);
-        }
-        $this->views = $table_views;
+    public function processSuffixedViews(Collection $views) {
+        $table_views = $views->clone()->filter(fn($view) => $view->refersTo($this->name));
+        $table_views->setKeys(fn(View $view) => $view->get_suffixe($this->name));
         return $table_views;
     }
     /**
@@ -217,11 +211,11 @@ class TableOrView {
         $result = $this->execute($query);
         // $result = $this->database->execute($query);
         if ($result === false) {
-            return Response::replyCode(404);
+            return Response::fromCode(404);
         }
 
         // if (empty($result)) {
-        // 	return Response::replyCode(204);
+        // 	return Response::fromCode(204);
         // }
         return $result;
     }
@@ -232,10 +226,17 @@ class TableOrView {
      * @return mixed The result of the function execution.
      */
     function execute($query, $data = []) {
-        $class= __NAMESPACE__ . '\\Models\\'. ucfirst($this->name);
+        $class = $this->guessClass($query);
         $result = $this->database->executeClass($class, $query, $data);
-		array_walk($result, fn(&$model) => $model->table = $this);
+		// array_walk($result, fn(&$model) => $model->table = $this);
         return $result;
+    }
+    function guessClass($query) {
+        $query = Database::normalizeQuery($query);
+        $model = preg_match('#^SELECT\s+(?:.+)\s+FROM\s+([`\'"]?)(\w+)\1#i', $query, $matches) ? $matches[2] : null;
+        $model = $model ?? $this->name;
+        $class= __NAMESPACE__ . '\\Models\\'. ucfirst($model);
+        return $class;
     }
     /**
      * Finds a record by its ID.
@@ -259,7 +260,7 @@ class TableOrView {
         self::addParams($query);
         $result = $this->execute($query, [$id]);
         if ($result === false) {
-            return Response::replyCode(404);
+            return Response::fromCode(404);
         }
         $model = $result[0];
         $model->table = $this;
@@ -267,7 +268,7 @@ class TableOrView {
             $model->fetchWith();
         }
         // if (empty($result)) {
-        // 	return Response::replyCode(204);
+        // 	return Response::fromCode(204);
         // }
         return $model;
     }
@@ -283,7 +284,7 @@ class TableOrView {
      */
     function related($related, $id, $suffix = "index") {
         if (!isset($this->relations[$related])) {
-            return Response::replyCode(404);
+            return Response::fromCode(404);
         }
         $relation = $this->relations[$related];
         $related = RestInPeace::getSchemaTable($relation->foreign_table);
@@ -295,13 +296,14 @@ class TableOrView {
         $query = [];
         $query[] = $relation->getSelect();
         $this->addParams($query);
-        $result = $this->database->execute($query, [$id]);
+        // $result = $this->database->execute($query, [$id]);
+        $result = $this->execute($query, [$id]);
 
         if ($result === false) {
-            return Response::replyCode(404);
+            return Response::fromCode(404);
         }
         // if (empty($result)) {
-        // 	return Response::replyCode(204);
+        // 	return Response::fromCode(204);
         // }
         // if ($relation->type === Relation::BELONGS_TO) {
         //     $result = $result[0];
@@ -319,7 +321,7 @@ class TableOrView {
      * @param Database $database Optional. The database connection or instance. Default is null.
      * @return self An instance of the class.
      */
-    static function from($config, Database $database = null) {
+    static function from($config, $database = null) {
         if ($config instanceof self) {
             return $config;
         }

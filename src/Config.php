@@ -23,6 +23,15 @@ class Config {
 	 * @return mixed The configuration value associated with the key, or the default value if the key is not found.
 	 */
 	static function get($key, $default = null) {
+		if (is_array($key)) {
+			foreach ($key as $k) {
+				$result = self::get($k, -1);
+				if ($result != -1) {
+					return $result;
+				}
+			}
+			return $default;
+		}
 		$result = self::$attributes[$key] ?? $_ENV["RIP_{$key}"] ?? $_ENV["RESTINPEACE_{$key}"] ?? $_ENV[$key] ?? $default;
 		if ($result === 'false') return false;
 		if ($result === 'true') return true;

@@ -26,13 +26,5 @@
     "source": "https://github.com/bobanum/RestInPeace"
   },
   "license": "MIT",
-  "minimum-stability": "stable",
-  "scripts": {
-    "post-install-cmd": [
-      "php scripts/inject-autoload.php"
-    ],
-    "post-update-cmd": [
-      "php scripts/inject-autoload.php"
-    ]
-  }
+  "minimum-stability": "stable"
 }

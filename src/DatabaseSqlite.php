@@ -119,24 +119,23 @@ class DatabaseSqlite extends Database {
 	/**
 	 * Retrieves a list of all tables in the SQLite database.
 	 *
-	 * @return Table[] An array of Table objects
+	 * @return Collection An array of Table objects
 	 */
-	public function getTables($sub = null) {
+	public function getTables($sub = null): Collection {
 		if ($sub === null) {
-			$tables = array_map(function ($db) {
-				return $this->getTables($db);
-			}, ['main', ... array_slice(array_keys($this->database), 1)]);
-			return array_merge(...$tables);
+			$tables = new Collection(['main', ... array_slice(array_keys($this->database), 1)]);
+			$tables->walk(fn($db) => [...$this->getTables($db)]);
+			return new Collection(array_merge(...$tables));
 		}
 		if ($sub === 'oauth') {
-			return []; // Skip the oauth database
+			return new Collection([]); // Skip the oauth database
 		}
 		$t = 'sqlite_master';
 		$t = $sub . '.sqlite_master';
 		$query = "SELECT name FROM {$t} WHERE type = 'table' ORDER BY name";
-		$tableSchemas = $this->execute($query);
-		$tableNames = array_map(fn($item) => $item['name'], $tableSchemas);
-		$tables = array_map(function ($tableName) {
+		$tableSchemas = new Collection($this->execute($query));
+		$tables = $tableSchemas->map(function ($schema) {
+			$tableName = $schema['name'];
 			$table = new Table($this, $tableName);
 			$table->columns = $this->getColumns($tableName);
 			$table->indexes = $this->getIndexes($tableName);
@@ -146,30 +145,30 @@ class DatabaseSqlite extends Database {
 				return false;
 			}
 			return $table;
-		}, $tableNames);
-		$tables = array_combine($tableNames, $tables);
-		$tables = array_filter($tables);
+		});
+		$tables->setKeys(fn($table) => $table->name);
+		$tables->filter(fn($table) => $table !== false);
 		return $tables;
 	}
 	/**
 	 * Retrieves a list of views from the SQLite database.
 	 *
-	 * @return View[] An array containing the names of the views in the database.
+	 * @return Collection An array containing the names of the views in the database.
 	 */
-	public function getViews() {
+	public function getViews() : Collection {
 		//NOT TESTED RECENTLY
 		$query = "SELECT name FROM sqlite_master WHERE type = 'view' ORDER BY name";
-		$viewSchemas = $this->execute($query);
-		$viewNames = array_map(fn($schema) => $schema['name'], $viewSchemas);
-		$views = array_map(function($viewName) {
+		$viewSchemas = new Collection($this->execute($query));
+		$viewSchemas->walk(function($schema) {
+			$viewName = $schema['name'];
 			$view = new View($this, $viewName);
 			$view->columns = $this->getColumns($view->name);
 			// $view->primary_key = $this->getPrimaryKey($view->name);
-		}, $viewNames);
-	
-		$views = array_combine($viewNames, $views);
-		$views = array_filter($views, fn($view) => $view->isValid());
-		return $views;
+			return $view;
+		});
+		$viewSchemas->setKeys(fn($view) => $view->name);
+		$viewSchemas->filter(fn($view) => $view->isValid());
+		return $viewSchemas;
 	}
 	public function zzgetViews() {
 		$query = "SELECT * FROM sqlite_master WHERE type='view' ORDER BY name";
@@ -194,14 +193,11 @@ class DatabaseSqlite extends Database {
 		} else {
 			$columns = $table->columns;
 		}
-		$pk = array_filter($columns, fn($column) => $column['pk'] === 1);
+		$pk = $columns->clone()->filter(fn($column) => $column['pk'] === 1);
 		if (empty($pk)) {
-			$pk = array_filter($columns, fn($column) => preg_match("~".self::$primary_key_pattern."~", $column['name']));
+			$pk = $columns->clone()->filter(fn($column) => preg_match("~".self::$primary_key_pattern."~", $column['name']));
 		}
-		$pk = array_map(function ($column) {
-			return $column['name'];
-		}, $pk);
-		
+		$pk->walk(fn($column) => $column['name']);
 		return $pk;
 	}
 	/**
@@ -216,8 +212,7 @@ class DatabaseSqlite extends Database {
 		}
 		$query = "PRAGMA table_info(`{$table}`)";
 		$columns = $this->execute($query);
-		$names = array_map(fn($column) => $column['name'], $columns);
-		$columns = array_combine($names, $columns);
+		$columns->attrToKeys('name');
 		return $columns;
 	}
 	/**

@@ -205,7 +205,6 @@ class Model implements \JsonSerializable {
 
 			$query['INSERT INTO'] = sprintf('`%s` (%s) VALUES (%s)', $this->table_name, $cols, $vals);
 		}
-		// vd($query, $values);
 		$result = $this->table->execute($query, $values);
 		return $result;
 	}
@@ -240,7 +239,7 @@ class Model implements \JsonSerializable {
 			$result[$key] = $value;
 		}
 		if ($addHateoas) {
-			$this->table->addHateoas($result);
+			// $this->table->addHateoas($result);
 		}
 		return $result;
 	}
