@@ -1,7 +1,6 @@
 <?php
 
 namespace RestInPeace;
-
 abstract class Database {
 	use HasAccessors;
 	/** @var string A regex pattern to match primary keys */
@@ -234,7 +233,7 @@ abstract class Database {
 	}
 	public function executeClass($class, $query, $data) {
 		$query = $this->normalizeQuery($query);
-		file_put_contents('query.sql', $query . "\n", FILE_APPEND);
+		// file_put_contents('query.sql', $query . "\n", FILE_APPEND);
 		try {
 			$statement = $this->prepare($query);
 			$statement->setFetchMode(\PDO::FETCH_CLASS, $class);
@@ -278,7 +277,7 @@ abstract class Database {
 	 */
 	public static function fetch(\PDOStatement $stmt): mixed {
 		$result = new Collection($stmt->fetchAll());
-		$result->attrToKeys('name');
+		$result->attrToKeys('id');
 		return $result;
 	}
 }

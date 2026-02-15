@@ -52,7 +52,7 @@ class Collection extends ArrayObject {
 	public function attrToKeys($name = 'id') {
 		$this->setKeys(fn($item, $key) => $item->$name ?? $key);
 	}
-	
+
 	public function filter($callback = null) {
 		$array = $this->getArrayCopy();
 		$result = array_filter($array, $callback, ARRAY_FILTER_USE_BOTH);
@@ -67,5 +67,25 @@ class Collection extends ArrayObject {
 	}
 	public function clone() {
 		return clone $this;
+	}
+	public function __toString() {
+		return json_encode($this->getArrayCopy());
+	}
+	public function toArray() {
+		return $this->getArrayCopy();
+	}
+	public function pluck($key) {
+		$array = $this->getArrayCopy();
+		if (is_callable($key)) {
+			return array_map($key, $array);
+		}
+		if (is_array($key)) {
+			return array_map(fn($item) => array_intersect_key($item, array_flip($key)), $array);
+		}
+		if (is_object($key)) {
+			$keys = (array)$key;
+			return array_map(fn($item) => (object)array_intersect_key($item, $keys), $array);
+		}
+		return $this->map(fn($item) => $item[$key] ?? null);
 	}
 }

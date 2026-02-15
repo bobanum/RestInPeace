@@ -2,7 +2,7 @@
 
 namespace RestInPeace;
 
-use \Dotenv\Dotenv;
+use Dotenv\Dotenv;
 use RestInPeace\RestInPeace as RIP;
 
 /**
@@ -86,31 +86,34 @@ class Config {
 		}
 		return RIP::app_path($result);
 	}
+	static function schemaPath() {
+		return self::path(sprintf("schema.%s.php", basename(Config::get('DB_DATABASE', 'schema'))));
+	}
 	/**
 	 * Checks if the given file has timed out.
 	 *
-	 * @param string $filename The path to the file to check.
+	 * @param string $path The path to the file to check.
 	 * @return bool Returns true if the file has timed out, false otherwise.
 	 */
-	static public function isTimedOut($filename) {
+	static public function isTimedOut($path = null) {
+		$path = $path ?? self::schemaPath();
+		if (!file_exists($path)) return true;
 		$timeout = self::get('SCHEMA_CACHE', RIP::SCHEMA_CACHE);
-		$filepath = self::path($filename);
-		if (!file_exists($filepath)) return true;
-		if (time() - filemtime($filepath) < $timeout) return false;
+		if (time() - filemtime($path) < $timeout) return false;
 		return true;
 	}
 	/**
 	 * Loads the configuration from the specified file.
 	 *
-	 * @param string $filename The path to the configuration file.
+	 * @param string $path The path to the configuration file.
 	 * @param bool $checkTimeout Optional. Whether to check for a timeout. Default is true.
 	 * @return mixed The loaded configuration data.
 	 */
-	static public function load($filename, $checkTimeout = true) {
-		$filepath = self::path($filename);
-		if (!file_exists($filepath)) return false;
-		if ($checkTimeout && self::isTimedOut($filename)) return false;
-		return include $filepath;
+	static public function load($path = null, $checkTimeout = true) {
+		$path = $path ?? self::schemaPath();
+		if (!file_exists($path)) return false;
+		if ($checkTimeout && self::isTimedOut($path)) return false;
+		return include $path;
 	}
 	/**
 	 * Normalizes the given data.
@@ -123,6 +126,10 @@ class Config {
 	 * @return mixed The normalized data.
 	 */
 	static public function normalizeData($data) {
+		if (is_scalar($data) || $data === null) return $data;
+		if ($data instanceof Collection) {
+			$data = $data->toArray();
+		}
 		if (is_object($data)) {
 			if (method_exists($data, 'toConfig')) {
 				$data = $data->toConfig();
@@ -132,22 +139,20 @@ class Config {
 			// Remove private properties
 			$data = array_filter($data, fn($key) => $key[0] !== "\0", ARRAY_FILTER_USE_KEY);
 		}
-		if (!is_array($data)) {
-			return $data;
+		if (is_array($data)) {
+			$data = array_map(fn($item) => self::normalizeData($item), $data);
 		}
-		$data = array_map(fn($item) => self::normalizeData($item), $data);
 
 		return $data;
 	}
 	/**
 	 * Outputs data to a specified file.
 	 *
-	 * @param string $filename The name of the file to output the data to.
 	 * @param mixed $data The data to be output to the file.
+	 * @param string $path The path of the file to output the data to.
 	 */
-	public static function output($filename, $data) {
-		// $filename = sprintf("schema.%s.php", basename(Config::get('DB_DATABASE', 'schema')));
-		$filepath = self::path($filename);
+	public static function output($data, $path = null) {
+		$path = $path ?? self::schemaPath();
 		$data = self::normalizeData($data);
 		$output = "\n" . var_export($data, true) . ";";
 		$output = preg_replace('~((?:\r\n|\n\r|\r|\n)\s*)array \(~', '[', $output);
@@ -155,25 +160,24 @@ class Config {
 		$output = str_replace('  ', "\t", $output);
 		$output = trim($output);
 		$output = "<?php\nreturn " . $output;
-		self::mkdir(dirname($filepath));
-		file_put_contents($filepath, $output);
+		self::mkdir(dirname($path));
+		file_put_contents($path, $output);
 		return $data;
 	}
 	public static function outputModels($data) {
-		// $filename = sprintf("schema.%s.php", basename(Config::get('DB_DATABASE', 'schema')));
 		['tables' => $tables, 'views' => $views] = $data;
 		self::mkdir(RIP::app_path("models"));
 		self::mkdir(RIP::app_path("traits"));
 		foreach ($tables as $tableName => $table) {
 			$modelName = ucfirst($tableName);
-			$filename = RIP::app_path("models/{$modelName}.php");
+			$path = RIP::app_path("models/{$modelName}.php");
 			$output = $table->modelOutput();
-			file_put_contents($filename, $output);
+			file_put_contents($path, $output);
 			$traitName = ucfirst($tableName) . 'Trait';
-			$filename = RIP::app_path("traits/{$traitName}.php");
-			if (!file_exists($filename)) {
+			$path = RIP::app_path("traits/{$traitName}.php");
+			if (!file_exists($path)) {
 				$output = $table->traitOutput();
-				file_put_contents($filename, $output);
+				file_put_contents($path, $output);
 			}
 		}
 		return;

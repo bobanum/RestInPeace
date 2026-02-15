@@ -3,6 +3,7 @@
 namespace RestInPeace;
 // header('Content-Type: application/json');
 // echo json_encode(debug_backtrace(), JSON_PRETTY_PRINT);
+
 /**
  * Represents the RestInPeace class.
  */
@@ -351,7 +352,6 @@ class RestInPeace {
 		}
 		return self::$db;
 	}
-
 	/**
 	 * Retrieves the schema.
 	 *
@@ -359,8 +359,7 @@ class RestInPeace {
 	 */
 	static public function getSchema() {
 		if (self::$_schema === null) {
-			$filename = sprintf("schema.%s.php", basename(Config::get('DB_DATABASE', 'schema')));
-			$schema = config::load($filename, true);
+			$schema = Config::load();
 			if ($schema === false) {
 				$schema = self::analyseDb();
 				$schema['updated_at'] = time();
@@ -449,9 +448,13 @@ class RestInPeace {
 		if (!$pdo) {
 			return Response::fromCode(503)->send();
 		}
-		$host = $_SERVER['HTTP_HOST'];
-		$protocol = $_SERVER['REQUEST_SCHEME'] ?? 'http';
-		self::$root = sprintf('%s://%s', $protocol, $host);
+		$root = [
+			"protocol" => ($_SERVER['REQUEST_SCHEME'] ?? 'http') . '://',
+			"host" => $_SERVER['HTTP_HOST'],
+			"folder" => str_replace('/index.php', '', $_SERVER['SCRIPT_NAME']),
+		];
+
+		self::$root = implode('', $root);
 	}
 }
 RestInPeace::init();
